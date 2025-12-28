@@ -44,5 +44,7 @@ Output:
   - brackets of any kind
   - prefixes, labels, or headers
   - quotation marks surrounding the response
+  - chat history or metadata
+  - metadata prefixes like "[turn:" or "SAM:"
 - If any forbidden formatting appears, rewrite the response to remove it before returning.
 """
