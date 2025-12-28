@@ -82,7 +82,7 @@ client = MyBot(
 class MyHelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         help_message = f"""
-For Full documentation see: [The Github Repo](<https://github.com/EvanSkiStudios/sam_ai_assistant>)
+For Full documentation see: [The Github Repo](<https://github.com/EvanSkiStudios/SAM-2.0>)
 Commands are issued like so: `{command_prefixes}<command> <argument>`
 ```Here are my commands:
 """
