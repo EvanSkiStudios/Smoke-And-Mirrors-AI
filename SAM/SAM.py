@@ -20,7 +20,7 @@ load_dotenv()
 os.environ["OLLAMA_API_KEY"] = os.getenv("OLLAMA_API")
 
 # model settings for easy swapping
-sam_model_name = 'SAM'
+sam_model_name = 'SAM-deepseek-r1'
 sam_ollama_model = 'huihui_ai/deepseek-r1-abliterated'
 sam_vision_model = 'gemma3'
 
@@ -69,8 +69,7 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
 
     full_prompt = [
         {"role": "system", "content": SAM_personality},
-        {"role": "system", "content": chat_history_system_prompt},
-        {"role": "user", "content": chat_history}
+        {"role": "user", "content": user_input}
     ]
 
     model_to_use = sam_model_name
@@ -92,8 +91,8 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
         model=model_to_use,
         messages=full_prompt,
         options={
-            "num_ctx": 16384,
-            'temperature': 0.6,
+            "num_ctx": 8192,
+            'temperature': 0.5,
             'think': True
         },
         stream=False
@@ -102,8 +101,7 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
     if image_file:
         vision_image_cleanup(image_file)
 
-    logger.info(full_prompt)
-    logger.info(response.message.content)
+    logger.info(response.message.thinking)
 
     # return response
     return response.message.content

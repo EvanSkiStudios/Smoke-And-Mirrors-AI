@@ -12,7 +12,7 @@ from utility_scripts.system_logging import setup_logger
 logger = setup_logger(__name__)
 
 search_model = 'huihui_ai/llama3.2-abliterate'
-chat_model = 'huihui_ai/llama3.2-abliterate'
+chat_model = 'huihui_ai/deepseek-r1-abliterated'
 
 
 def search_the_web(query):
