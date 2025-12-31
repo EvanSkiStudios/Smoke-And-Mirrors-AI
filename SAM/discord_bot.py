@@ -56,6 +56,7 @@ class MyBot(commands.Bot):
         # Load cogs here
         cogs = [
             "discord_functions.cogs.bot_commands",
+            "discord_functions.cogs.slash_commands.analyze",
             "discord_functions.cogs.slash_commands.delete",
             "discord_functions.cogs.slash_commands.neuralize",
             "discord_functions.cogs.slash_commands.parrot",
@@ -241,12 +242,18 @@ def get_message_attachments(message):
 
 @client.event
 async def on_message(message):
-    if should_ignore_message(client, message):
+
+    if await should_ignore_message(client, message):
         return
 
     await client.process_commands(message)
 
     if any(message.content.startswith(prefix) for prefix in command_prefixes):
+        return
+
+    if message.content == "" and len(message.embeds) != 0:
+        # manage embeds
+        # await message_history_cache(client, message)
         return
 
     # noinspection PyAsyncCall

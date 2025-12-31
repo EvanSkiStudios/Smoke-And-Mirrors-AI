@@ -27,7 +27,7 @@ config_dict = {
     },
     "BOTS": {
         "SCUNGEONMASTER": os.getenv("BOT_ID_SCUNGE"),
-        "ARETE": os.getenv("BOT_ID_ARI")
+        # "ARETE": os.getenv("BOT_ID_ARI")
     }
 }
 CONFIG = ns(config_dict)
@@ -35,21 +35,46 @@ bots_blacklist = [int(b) for b in CONFIG.BOTS.__dict__.values()]
 channels_whitelist = [int(t) for t in CONFIG.THREADS_ALLOW.__dict__.values()]
 
 
-def should_ignore_message(client, message):
-    if not message.content:
+async def should_ignore_message(client, message):
+    if message.content == "" and len(message.embeds) == 0:
         # ignores empty messages
-        # should manage embeds at one point (message.embeds)
+        return True
+
+    if await message_is_slash_reply(message):
         return True
     if message.author in bots_blacklist:
         return True
     if message.channel.id not in channels_whitelist:
         return True
     if message.type == discord.MessageType.chat_input_command:
+        # slash command messages
         return True
     if message.mention_everyone:
         return True
     if message.author == client.user:
         return True
+
+    return False
+
+
+async def message_is_slash_reply(message):
+    if message.type == discord.MessageType.reply and message.reference:
+        try:
+            referenced = await message.channel.fetch_message(message.reference.message_id)
+        except discord.NotFound:
+            referenced = None  # message was deleted
+        except discord.Forbidden:
+            referenced = None  # missing permissions
+        except discord.HTTPException:
+            referenced = None  # network or other fetch error
+
+        if referenced is None:
+            return False
+
+        if referenced.interaction_metadata is not None:
+            # This message is a reply to a slash command response
+            return True
+
     return False
 
 
@@ -120,7 +145,7 @@ async def message_history_cache(client, message):
                 reply_to = None
 
             if reply_to:
-                return f'{author} ({nick}): (Replying to: {reply_to}) "{content}"'
+                return f'{author} ({nick}) (Replying to: {reply_to}): "{content}"'
             else:
                 return f'{author} ({nick}): "{content}"'
 

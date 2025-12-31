@@ -12,6 +12,8 @@ from utility_scripts.system_logging import setup_logger
 from utility_scripts.utility import split_response
 
 from pathlib import Path
+from PIL import Image
+from PIL.Image import DecompressionBombError
 
 # configure logging
 logger = setup_logger(__name__)
@@ -76,12 +78,10 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
         if entry.startswith("SAM:"):
             role = "assistant"
             entry = entry.replace("SAM: ", "")
-
         return {"role": role, "content": entry}
 
     full_prompt = [
-        {"role": "system", "content": SAM_personality},
-        {"role": "system", "content": chat_history_system_prompt},
+        {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt},
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
 
@@ -99,12 +99,20 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
         logger.debug(f"Attachments: {attachments}")
         logger.info(f'Analyzing image ({image_file})...')
 
+        try:
+            with Image.open(path) as img:
+                width, height = img.size
+            logger.info(f'Image size ({width} x {height})')
+        except DecompressionBombError:
+            # handle over-sized image
+            logger.error(f"{image_file} too large to get size!")
+
     response = await asyncio.to_thread(
         chat,
         model=model_to_use,
         messages=full_prompt,
         options={
-            'num_ctx': 8192,
+            'num_ctx': 16384,
             'temperature': 0.5,
             'think': True
         },

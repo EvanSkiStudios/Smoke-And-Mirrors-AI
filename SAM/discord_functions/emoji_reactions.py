@@ -65,12 +65,10 @@ system_prompt = dictation_rules
 
 async def llm_emoji_react_to_message(content):
     client = AsyncClient()
-    response = await client.chat(
+    response = await client.generate(
         model=emoji_llm,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": content}
-        ],
+        system=system_prompt,
+        prompt=content,
         options={'temperature': 0.2},  # Make responses less or more deterministic
     )
 
