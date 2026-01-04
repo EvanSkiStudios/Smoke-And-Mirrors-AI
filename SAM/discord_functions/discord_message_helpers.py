@@ -103,34 +103,6 @@ def clear_chat_cache():
     current_turn_number = 0
 
 
-def next_turn():
-    global current_turn_number
-    current_turn_number += 1
-    return current_turn_number
-
-
-def assign_turn_numbers(prompts):
-    global current_turn_number
-    numbered = []
-    for p in prompts:
-        current_turn_number += 1
-        numbered.append(f'[turn: {current_turn_number}] {p}')
-    return numbered
-
-
-def renumber_turns():
-    global current_turn_number
-    current_turn_number = 0
-
-    renumbered = deque(maxlen=current_session_chat_cache.maxlen)
-
-    for entry in current_session_chat_cache:
-        renumbered.append(entry)
-
-    current_session_chat_cache.clear()
-    current_session_chat_cache.extend(renumbered)
-
-
 # Create a lock
 lock = asyncio.Lock()
 
@@ -198,6 +170,13 @@ async def message_history_cache(client, message):
 
             history_prompts = []
             async for past_message in channel.history(limit=20):
+
+                # ignore embeds and empty messages
+                if past_message.content == "" and len(past_message.embeds) == 0:
+                    continue
+                if await message_is_slash_reply(past_message):
+                    continue
+
                 history_prompts.extend(await process_message(past_message))
 
             current_session_chat_cache.extend(reversed(history_prompts))
