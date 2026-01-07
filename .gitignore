@@ -30,15 +30,14 @@ __pycache__/
 /SAM/message_logs/references
 
 # ----------------------
-# Runtime / generated memory data
-# ----------------------
-/SAM/memories/meet_the_robinsons
-/SAM/memories/users
-/SAM/memories/__consent_users.json
-/SAM/memories/__things_you_know.json
-
-# ----------------------
 # Documentation / wiki
 # ----------------------
 /SAM-2.0.wiki
-/SAM/web_console/web_console
+SAM/web_console/web_console/p5.js
+SAM/web_console/web_console/p5.sound.min.js
+
+# ----------------------
+# Web Console
+# ----------------------
+SAM/web_console/web_console/p5.js
+SAM/web_console/web_console/p5.sound.min.js
