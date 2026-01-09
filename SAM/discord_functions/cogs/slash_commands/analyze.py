@@ -16,9 +16,10 @@ def analyze_message(message):
     ]
 
     if message.attachments:
+        details.append(f"\nAttachments: {message.attachments}\n")
         for media in message.attachments:
             details.append(
-                f"\nAttachment:\n  Type: {str(media.content_type).lower()}\n  URL: {media.url}"
+                f"\nAttachment:\n  Name: {str(media.filename).lower()}\n  Type: {str(media.content_type).lower()}\n  URL: {media.url}"
             )
 
     if message.embeds:

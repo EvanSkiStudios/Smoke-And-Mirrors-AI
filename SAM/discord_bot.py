@@ -19,6 +19,7 @@ from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search
 from utility_scripts.system_logging import setup_logger
 from SAM import sam_create, sam_message
+from utility_scripts.utility import parse_mime_type
 
 # configure logging
 logger = setup_logger(__name__)
@@ -155,7 +156,7 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
 
     async with message.channel.typing():
         if message_attachments:
-            media_type, media_subtype = message_attachments[0]["type"].split("/", 1)
+            media_type, media_subtype, params = parse_mime_type(message_attachments[0]["type"])
 
             if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
                 request_classification = "image"
@@ -246,7 +247,7 @@ def get_message_attachments(message):
             # currently only looks at one image if there are multiple
             message_attachments.append({
                 "type": content_type,
-                "attachments": attachments,
+                "filename": media.filename,
                 "attachment_url": media.url
             })
     return message_attachments

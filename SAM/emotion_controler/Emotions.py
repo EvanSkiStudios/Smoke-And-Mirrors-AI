@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class Emotion:
     def __init__(self, name):
         self.name = name.capitalize()
