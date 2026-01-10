@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 from types import SimpleNamespace
 
 from discord_functions.discord_bot_users_manager import handle_bot_message
+from discord_functions.utility.discord_helpers import get_message_attachments
 from discord_functions.discord_message_helpers import should_ignore_message, message_history_cache, CachedBotMessage
-from discord_functions.emoji_reactions import react_to_messages
 from message_logs.log_message import log_message
 from tools.determine_request import classify_request
 from tools.elevenlabs_voice import text_to_speech
@@ -139,22 +139,36 @@ async def send_tts(interaction_or_message, text, reply_target=None):
     os.remove(tts_file)
 
 
-async def llm_chat(message, username: str, user_nickname: str, message_content: str, message_attachments=None):
-    if message_attachments is None:
-        message_attachments = []
+async def llm_chat(message, username: str, user_nickname: str, message_content: str):
 
+    # Handle Bot messages
     if message.author.bot:
         result = handle_bot_message(username)
         if result == -1:
             return
 
+    # handle if message is TTS request
     is_tts_message = False
     if not message.author.bot and re.search(r"\(tts\)", message_content, re.IGNORECASE):
         logger.debug('Message is a TTS Message')
         is_tts_message = True
         message_content = re.sub(r"\(tts\)", "", message_content, flags=re.IGNORECASE)
 
+    # ===========================================
+    # MAIN MESSAGE HANDLING
+    # ===========================================
     async with message.channel.typing():
+
+        # ===========================================
+        # Attachments
+        # ===========================================
+        message_attachments = get_message_attachments(message)
+
+        if message_attachments is None:
+            message_attachments = []
+
+        # download_attachments(attachments)
+
         if message_attachments:
             media_type, media_subtype, params = parse_mime_type(message_attachments[0]["type"])
 
@@ -162,6 +176,10 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
                 request_classification = "image"
         else:
             request_classification = classify_request(message_content)
+
+        # ===========================================
+        # CLASSIFY WHAT TYPE OF RESPONSE IS NEEDED
+        # ===========================================
 
         logger.info(f"Classification={request_classification}, Content={message_content}")
 
@@ -234,25 +252,6 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
     await log_message(sent_message, thinking, user_message)
 
 
-def get_message_attachments(message):
-    message_attachments = None
-    if message.attachments:
-        logger.info("Message has attachments")
-        message_attachments = []
-        for media in message.attachments:
-            content_type = str(media.content_type).lower()
-
-            # Unhandled formats will give  (status code: 500) from the bot
-            attachments = message.attachments
-            # currently only looks at one image if there are multiple
-            message_attachments.append({
-                "type": content_type,
-                "filename": media.filename,
-                "attachment_url": media.url
-            })
-    return message_attachments
-
-
 @client.event
 async def on_message(message):
 
@@ -281,8 +280,7 @@ async def on_message(message):
 
     # DMs
     if isinstance(message.channel, discord.DMChannel):
-        message_attachments = get_message_attachments(message)
-        await llm_chat(message, username, user_nickname, message_content, message_attachments)
+        await llm_chat(message, username, user_nickname, message_content)
         return
 
     # replying to bot directly
@@ -291,25 +289,21 @@ async def on_message(message):
             return
         referenced_message = await message.channel.fetch_message(message.reference.message_id)
         if referenced_message.author == client.user:
-            message_attachments = get_message_attachments(message)
-            await llm_chat(message, username, user_nickname, message_content, message_attachments)
+            await llm_chat(message, username, user_nickname, message_content)
             return
 
     # ping
     if client.user.mentioned_in(message):
-        message_attachments = get_message_attachments(message)
-        await llm_chat(message, username, user_nickname, message_content, message_attachments)
+        await llm_chat(message, username, user_nickname, message_content)
         return
 
     # if the message includes "sam " it will trigger and run the code
     if re.search(r"\bsam[\s,.?!]", message_content, re.IGNORECASE):
-        message_attachments = get_message_attachments(message)
-        await llm_chat(message, username, user_nickname, message_content, message_attachments)
+        await llm_chat(message, username, user_nickname, message_content)
         return
 
     if message_content.lower().endswith('sam'):
-        message_attachments = get_message_attachments(message)
-        await llm_chat(message, username, user_nickname, message_content, message_attachments)
+        await llm_chat(message, username, user_nickname, message_content)
         return
 
 

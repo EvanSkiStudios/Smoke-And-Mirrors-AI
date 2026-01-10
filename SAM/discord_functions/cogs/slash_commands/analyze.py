@@ -1,6 +1,9 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+
+from discord_functions.utility.discord_helpers import get_message_attachments
+from discord_functions.utility.download_discord_attachments import download_attachments
 from utility_scripts.system_logging import setup_logger
 
 # configure logging
