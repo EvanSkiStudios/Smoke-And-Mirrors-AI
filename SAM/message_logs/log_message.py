@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 
-from discord_functions.discord_message_helpers import session_chat_cache
+from discord_functions.discord_message_cache import session_chat_cache
 from utility_scripts.system_logging import setup_logger
 
 # configure logging

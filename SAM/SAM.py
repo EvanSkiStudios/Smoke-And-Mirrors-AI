@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from ollama import Client, chat
 
 from sam_config import SAM_personality, chat_history_system_prompt
-from discord_functions.discord_message_helpers import session_chat_cache
+from discord_functions.discord_message_cache import session_chat_cache
 from tools.vision.gemma_vision import vision_image_cleanup
 from utility_scripts.system_logging import setup_logger
 from utility_scripts.utility import split_response
@@ -59,13 +59,7 @@ async def sam_message(message_author_name, message_author_nickname, message_cont
     message object ]
     """
 
-    llm_response = await sam_converse(
-        message_author_name,
-        message_author_nickname,
-        message_content,
-        image_file=image_file,
-        message_attachments=message_attachments
-    )
+    llm_response = await sam_converse()
 
     cleaned = llm_response.content.replace("'", "\\'")
     return {
@@ -74,7 +68,7 @@ async def sam_message(message_author_name, message_author_nickname, message_cont
     }
 
 
-async def sam_converse(user_name, user_nickname, user_input, image_file=None, message_attachments=None):
+async def sam_converse():
     current_session_chat_cache = session_chat_cache()
     chat_log = list(current_session_chat_cache)
 
@@ -91,31 +85,9 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
 
-    model_to_use = sam_model_name
-
-    if image_file:
-        model_to_use = sam_vision_model
-        # Go one directory up
-        parent_dir = Path(__file__).resolve().parent
-        path = parent_dir / 'tools/vision/images_temp' / image_file
-
-        full_prompt[-1]["images"] = [path]
-        attachments = message_attachments[0]["attachments"]
-
-        logger.debug(f"Attachments: {attachments}")
-        logger.info(f'Analyzing image ({image_file})...')
-
-        try:
-            with Image.open(path) as img:
-                width, height = img.size
-            logger.info(f'Image size ({width} x {height})')
-        except DecompressionBombError:
-            # handle over-sized image
-            logger.error(f"{image_file} too large to get size!")
-
     response = await asyncio.to_thread(
         chat,
-        model=model_to_use,
+        model=sam_model_name,
         messages=full_prompt,
         options={
             'num_ctx': 16384,
@@ -124,9 +96,6 @@ async def sam_converse(user_name, user_nickname, user_input, image_file=None, me
         },
         stream=False
     )
-
-    if image_file:
-        vision_image_cleanup(image_file)
 
     # return response
     return response.message

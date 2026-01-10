@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from tools.elevenlabs_voice import text_to_speech
+from tools.text_to_speech.elevenlabs_voice import text_to_speech
 from utility_scripts.system_logging import setup_logger
 
 # configure logging

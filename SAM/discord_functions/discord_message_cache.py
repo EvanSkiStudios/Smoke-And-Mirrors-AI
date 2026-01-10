@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 from collections import deque
 
 import discord
@@ -135,6 +136,10 @@ async def message_history_cache(client, message):
             author_name = msg.author.name
             author_nick = msg.author.display_name
             content = msg.clean_content
+
+            # remove (tts) tag
+            if not message.author.bot and re.search(r"\(tts\)", content, re.IGNORECASE):
+                content = re.sub(r"\(tts\)", "", content, flags=re.IGNORECASE)
 
             # Assistant (bot) message
             if msg.author.id == client.user.id:

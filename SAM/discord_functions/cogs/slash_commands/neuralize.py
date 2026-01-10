@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from discord_functions.discord_message_helpers import clear_chat_cache
+from discord_functions.discord_message_cache import clear_chat_cache
 from utility_scripts.system_logging import setup_logger
 
 # configure logging

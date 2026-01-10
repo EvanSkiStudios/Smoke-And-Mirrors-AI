@@ -10,10 +10,11 @@ from types import SimpleNamespace
 
 from discord_functions.discord_bot_users_manager import handle_bot_message
 from discord_functions.utility.discord_helpers import get_message_attachments
-from discord_functions.discord_message_helpers import should_ignore_message, message_history_cache, CachedBotMessage
+from discord_functions.discord_message_cache import should_ignore_message, message_history_cache, CachedBotMessage
+from discord_functions.utility.download_discord_attachments import download_attachments
 from message_logs.log_message import log_message
 from tools.determine_request import classify_request
-from tools.elevenlabs_voice import text_to_speech
+from tools.text_to_speech.tts_message_helpers import send_tts, message_is_tts
 from tools.vision.gemma_vision import vision_download_image
 from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search
@@ -121,25 +122,9 @@ async def on_connect():
 
 
 # ------- MESSAGE HANDLERS ---------
-async def send_tts(interaction_or_message, text, reply_target=None):
-    text_filtered = re.sub(r"\*(.*?)\*", r"[\1]", text)
-    tts_file = await text_to_speech(text_filtered)
-    if not tts_file:
-        logger.error('TTS Error')
-        await (interaction_or_message.followup.send if hasattr(interaction_or_message, "followup")
-               else interaction_or_message.channel.send)("Error making TTS.")
-        return
-    if reply_target:
-        await reply_target.reply(file=discord.File(tts_file))
-    else:
-        if hasattr(interaction_or_message, "followup"):
-            await interaction_or_message.followup.send(file=discord.File(tts_file))
-        else:
-            await interaction_or_message.channel.send(file=discord.File(tts_file))
-    os.remove(tts_file)
-
-
-async def llm_chat(message, username: str, user_nickname: str, message_content: str):
+async def llm_chat(message):
+    username = message.author.name
+    user_nickname = message.author.display_name
 
     # Handle Bot messages
     if message.author.bot:
@@ -148,11 +133,7 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
             return
 
     # handle if message is TTS request
-    is_tts_message = False
-    if not message.author.bot and re.search(r"\(tts\)", message_content, re.IGNORECASE):
-        logger.debug('Message is a TTS Message')
-        is_tts_message = True
-        message_content = re.sub(r"\(tts\)", "", message_content, flags=re.IGNORECASE)
+    is_tts_message, message_content = message_is_tts(message)
 
     # ===========================================
     # MAIN MESSAGE HANDLING
@@ -164,16 +145,8 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
         # ===========================================
         message_attachments = get_message_attachments(message)
 
-        if message_attachments is None:
-            message_attachments = []
-
-        # download_attachments(attachments)
-
         if message_attachments:
-            media_type, media_subtype, params = parse_mime_type(message_attachments[0]["type"])
-
-            if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
-                request_classification = "image"
+            request_classification = "attachment"
         else:
             request_classification = classify_request(message_content)
 
@@ -194,12 +167,17 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
                 logger.info(message.content)
                 response = await llm_internet_search(message_content)
 
-            case "image":
-                attachment_url = message_attachments[0]["attachment_url"]
-
+            case "attachment":
                 loop = asyncio.get_event_loop()
-                image_file_name = await loop.run_in_executor(None, vision_download_image, attachment_url)
+                gathered_attachments = await loop.run_in_executor(None, download_attachments, message_attachments)
+
                 response = await sam_message(username, user_nickname, message_content, image_file_name, message_attachments)
+
+                media_type, media_subtype, params = parse_mime_type(message_attachments[0]["type"])
+
+                if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
+                    request_classification = "image"
+                pass
 
             case _:
                 response = await sam_message(username, user_nickname, message_content)
@@ -254,6 +232,9 @@ async def llm_chat(message, username: str, user_nickname: str, message_content: 
 
 @client.event
 async def on_message(message):
+    # ============================
+    # If we should ignore the new message
+    # ============================
 
     if await should_ignore_message(client, message):
         return
@@ -264,23 +245,23 @@ async def on_message(message):
         return
 
     if message.content == "" and len(message.embeds) != 0:
-        # manage embeds
+        # todo manage embeds
         # await message_history_cache(client, message)
         return
 
     # noinspection PyAsyncCall
     # asyncio.create_task(react_to_messages(message))
 
-    # gather message data
-    message_content = message.clean_content
-    username = message.author.name
-    user_nickname = message.author.display_name
-
+    # Gather chat cache
     await message_history_cache(client, message)
+
+# ============================
+# Get kind of response
+# ============================
 
     # DMs
     if isinstance(message.channel, discord.DMChannel):
-        await llm_chat(message, username, user_nickname, message_content)
+        await llm_chat(message)
         return
 
     # replying to bot directly
@@ -289,23 +270,30 @@ async def on_message(message):
             return
         referenced_message = await message.channel.fetch_message(message.reference.message_id)
         if referenced_message.author == client.user:
-            await llm_chat(message, username, user_nickname, message_content)
+            await llm_chat(message)
             return
 
     # ping
     if client.user.mentioned_in(message):
-        await llm_chat(message, username, user_nickname, message_content)
+        await llm_chat(message)
         return
+
+    # clean content to use for re
+    message_content = message.clean_content
 
     # if the message includes "sam " it will trigger and run the code
     if re.search(r"\bsam[\s,.?!]", message_content, re.IGNORECASE):
-        await llm_chat(message, username, user_nickname, message_content)
+        await llm_chat(message)
         return
 
     if message_content.lower().endswith('sam'):
-        await llm_chat(message, username, user_nickname, message_content)
+        await llm_chat(message)
         return
 
+
+# ============================
+# FINISH
+# ============================
 
 # Startup discord_functions Bot
 client.run(CONFIG.BOT.TOKEN)
