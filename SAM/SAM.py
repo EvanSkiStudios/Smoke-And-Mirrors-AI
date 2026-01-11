@@ -8,13 +8,9 @@ from ollama import Client, chat
 from discord_functions.utility.download_discord_attachments import digest_attachments
 from sam_config import SAM_personality, chat_history_system_prompt
 from discord_functions.discord_message_cache import session_chat_cache
-from tools.vision.gemma_vision import vision_image_cleanup
 from utility_scripts.system_logging import setup_logger
 from utility_scripts.utility import split_response
 
-from pathlib import Path
-from PIL import Image
-from PIL.Image import DecompressionBombError
 
 # configure logging
 logger = setup_logger(__name__)
@@ -118,7 +114,6 @@ async def sam_converse_files(text_data=None, image_data=None):
     current_session_chat_cache = session_chat_cache()
     chat_log = list(current_session_chat_cache)
 
-    # Keep assistant vs user turns distinct (LLMs are trained on role-tagged conversations)
     def build_role_message(entry: str):
         role = "user"
         if entry.startswith("SAM:"):
@@ -128,19 +123,14 @@ async def sam_converse_files(text_data=None, image_data=None):
 
     text_data_prompt = ""
     if text_data is not None:
-        text_data_prompt = "\n\n(The user has provided the following file context/s to help form a response to their message:)\n" + text_data
+        text_data_prompt = "\n\nThe user has provided the following file context/s to help form a response to their message:\n" + text_data
 
-    # system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data_prompt}
-    system_prompt = {"role": "system",
-                     "content": SAM_personality + "\n\n" + chat_history_system_prompt}
+    system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + text_data_prompt}
 
     full_prompt = [
         system_prompt,
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
-
-    full_prompt[-1]["content"] += text_data_prompt
-    print(full_prompt[-1]["content"])
 
     response = await asyncio.to_thread(
         chat,
