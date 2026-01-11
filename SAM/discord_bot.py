@@ -171,13 +171,11 @@ async def llm_chat(message):
                 loop = asyncio.get_event_loop()
                 gathered_attachments = await loop.run_in_executor(None, download_attachments, message_attachments)
 
-                response = await sam_message(username, user_nickname, message_content, image_file_name, message_attachments)
+                if not gathered_attachments:
+                    logger.error("Attachments missing- reverting to basic chat")
+                    response = await sam_message(username, user_nickname, message_content)
 
-                media_type, media_subtype, params = parse_mime_type(message_attachments[0]["type"])
-
-                if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
-                    request_classification = "image"
-                pass
+                response = await sam_message(message_attachments=message_attachments)
 
             case _:
                 response = await sam_message(username, user_nickname, message_content)

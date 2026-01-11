@@ -5,6 +5,7 @@ import sys
 from dotenv import load_dotenv
 from ollama import Client, chat
 
+from discord_functions.utility.download_discord_attachments import digest_attachments
 from sam_config import SAM_personality, chat_history_system_prompt
 from discord_functions.discord_message_cache import session_chat_cache
 from tools.vision.gemma_vision import vision_image_cleanup
@@ -51,7 +52,7 @@ def sam_create():
 
 
 # === Main Entry Point ===
-async def sam_message(message_author_name, message_author_nickname, message_content, image_file=None,
+async def sam_message(message_author_name=None, message_author_nickname=None, message_content=None, image_file=None,
                       message_attachments=None) -> dict[str, any]:
     """
     :return: dict [
@@ -59,7 +60,16 @@ async def sam_message(message_author_name, message_author_nickname, message_cont
     message object ]
     """
 
-    llm_response = await sam_converse()
+    text_data = None
+    image_data = None
+    if message_attachments:
+        text_data, image_data = await digest_attachments(message_attachments)
+
+    if text_data is not None:
+        text_data_string = "".join(text_data)
+        llm_response = await sam_converse_files(text_data=text_data_string)
+    else:
+        llm_response = await sam_converse()
 
     cleaned = llm_response.content.replace("'", "\\'")
     return {
@@ -82,6 +92,42 @@ async def sam_converse():
 
     full_prompt = [
         {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt},
+        *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
+    ]
+
+    response = await asyncio.to_thread(
+        chat,
+        model=sam_model_name,
+        messages=full_prompt,
+        options={
+            'num_ctx': 16384,
+            'temperature': 0.5,
+            'think': True
+        },
+        stream=False
+    )
+
+    # return response
+    return response.message
+
+
+async def sam_converse_files(text_data=None, image_data=None):
+    current_session_chat_cache = session_chat_cache()
+    chat_log = list(current_session_chat_cache)
+
+    # Keep assistant vs user turns distinct (LLMs are trained on role-tagged conversations)
+    def build_role_message(entry: str):
+        role = "user"
+        if entry.startswith("SAM:"):
+            role = "assistant"
+            entry = entry.replace("SAM: ", "")
+        return {"role": role, "content": entry}
+
+    if text_data is not None:
+        text_data_prompt = "Use the following file context to help form a response to the user:\n" + text_data
+
+    full_prompt = [
+        {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data},
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
 

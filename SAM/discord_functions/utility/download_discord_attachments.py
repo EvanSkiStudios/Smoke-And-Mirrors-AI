@@ -25,11 +25,11 @@ temp_path = parent_dir / 'attachments_temp'
 temp_path.mkdir(exist_ok=True)
 
 
-def download_attachments(message_attachments: list) -> list:
+def download_attachments(message_attachments: list) -> dict:
     if not message_attachments:
-        return []
+        return {}
 
-    gathered_attachments = []
+    gathered_attachments = {}
 
     for attachment in message_attachments:
         file_name = attachment["filename"]
@@ -48,7 +48,14 @@ def download_attachments(message_attachments: list) -> list:
                         if chunk:
                             file.write(chunk)
 
-                gathered_attachments.append(file_path)
+                attachment_data = {
+                    "filepath": file_path,
+                    "mediatype": media_type,
+                    "mediasubtype": media_subtype,
+                    "params": params
+                }
+
+                gathered_attachments[str(file_name)] = attachment_data
 
         except requests.RequestException as e:
             logger.error(f"{file_name} || Request failed: {e}")
@@ -56,3 +63,30 @@ def download_attachments(message_attachments: list) -> list:
 
     # END
     return gathered_attachments
+
+
+async def digest_attachments(message_attachments):
+    text_data = []
+    image_data = []
+
+    for attachment in message_attachments:
+        file_path = attachment["filepath"]
+        media_type = attachment["mediatype"]
+        media_subtype = attachment["mediasubtype"]
+        params = attachment["params"]
+
+        if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
+            image_data.append(file_path)
+
+        if media_type == "text":
+            charset = params.get("charset", "utf-8")
+
+            text_string = f"\n```{attachment}\n"
+
+            with file_path.open("r", encoding=charset, errors="replace") as f:
+                content = f.read()
+
+            text_string += (content + "\n```")
+            text_data.append(text_string)
+
+    return text_data, image_data
