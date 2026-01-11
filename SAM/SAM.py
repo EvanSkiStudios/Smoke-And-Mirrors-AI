@@ -67,14 +67,15 @@ async def sam_message(message_author_name=None, message_author_nickname=None, me
 
     if text_data is not None:
         text_data_string = "".join(text_data)
-        llm_response = await sam_converse_files(text_data=text_data_string)
+        llm_response, full_prompt = await sam_converse_files(text_data=text_data_string)
     else:
-        llm_response = await sam_converse()
+        llm_response, full_prompt = await sam_converse()
 
     cleaned = llm_response.content.replace("'", "\\'")
     return {
         "content": split_response(cleaned),
-        "message": llm_response
+        "message": llm_response,
+        "prompt": full_prompt
     }
 
 
@@ -90,8 +91,10 @@ async def sam_converse():
             entry = entry.replace("SAM: ", "")
         return {"role": role, "content": entry}
 
+    system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt}
+
     full_prompt = [
-        {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt},
+        system_prompt,
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
 
@@ -108,7 +111,7 @@ async def sam_converse():
     )
 
     # return response
-    return response.message
+    return response.message, system_prompt
 
 
 async def sam_converse_files(text_data=None, image_data=None):
@@ -123,11 +126,14 @@ async def sam_converse_files(text_data=None, image_data=None):
             entry = entry.replace("SAM: ", "")
         return {"role": role, "content": entry}
 
+    text_data_prompt = ""
     if text_data is not None:
-        text_data_prompt = "Use the following file context to help form a response to the user:\n" + text_data
+        text_data_prompt = "The user has provided the following file context/s to help form a response to their message:\n" + text_data
+
+    system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data_prompt}
 
     full_prompt = [
-        {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data},
+        system_prompt,
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
 
@@ -144,4 +150,4 @@ async def sam_converse_files(text_data=None, image_data=None):
     )
 
     # return response
-    return response.message
+    return response.message, system_prompt

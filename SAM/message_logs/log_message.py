@@ -34,7 +34,7 @@ def format_details(summary: str, content: str) -> str:
     )
 
 
-async def log_message(sent_message, thinking: str, user_message: dict) -> None:
+async def log_message(sent_message, thinking: str, user_message: dict, system_prompt: dict) -> None:
     save_dir = Path(__file__).resolve().parent / "logs"
     save_dir.mkdir(exist_ok=True)
 
@@ -45,6 +45,11 @@ async def log_message(sent_message, thinking: str, user_message: dict) -> None:
 
     full_chat_history = "\n".join(
         f'{m["role"]}: {m["content"]}\n' for m in chat_history
+    )
+
+    sys_prompt_string = (
+            "role: " + system_prompt["role"] + "\n"
+            "content:\n" + system_prompt["content"]
     )
 
     output = (
@@ -60,6 +65,8 @@ async def log_message(sent_message, thinking: str, user_message: dict) -> None:
         f"{format_details('Response', sent_message.content)}"
         "\n"
         f"{format_details('Full History', full_chat_history)}"
+        "\n"
+        f"{format_details('Full Prompt', sys_prompt_string)}"
     )
 
     path.write_text(output, encoding="utf-8")

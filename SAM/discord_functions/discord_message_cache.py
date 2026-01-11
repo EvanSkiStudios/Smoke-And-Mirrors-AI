@@ -28,7 +28,7 @@ config_dict = {
     },
     "BOTS": {
         "SCUNGEONMASTER": os.getenv("BOT_ID_SCUNGE"),
-        # "ARETE": os.getenv("BOT_ID_ARI")
+        "ARETE": os.getenv("BOT_ID_ARI")
     }
 }
 CONFIG = ns(config_dict)
@@ -176,6 +176,8 @@ async def message_history_cache(client, message):
             history_prompts = []
             async for past_message in channel.history(limit=20):
 
+                if message.author in bots_blacklist:
+                    continue
                 # ignore embeds and empty messages
                 if past_message.content == "" and len(past_message.embeds) == 0:
                     continue

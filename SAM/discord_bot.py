@@ -173,12 +173,12 @@ async def llm_chat(message):
 
                 if not gathered_attachments:
                     logger.error("Attachments missing- reverting to basic chat")
-                    response = await sam_message(username, user_nickname, message_content)
+                    response = await sam_message()
 
-                response = await sam_message(message_attachments=message_attachments)
+                response = await sam_message(message_attachments=gathered_attachments)
 
             case _:
-                response = await sam_message(username, user_nickname, message_content)
+                response = await sam_message()
 
     # ===========================================
     # Sending Response to Discord
@@ -225,7 +225,7 @@ async def llm_chat(message):
     else:
         thinking = "No Thinking"
 
-    await log_message(sent_message, thinking, user_message)
+    await log_message(sent_message, thinking, user_message, response["prompt"])
 
 
 @client.event

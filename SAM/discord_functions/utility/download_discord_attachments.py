@@ -69,7 +69,7 @@ async def digest_attachments(message_attachments):
     text_data = []
     image_data = []
 
-    for attachment in message_attachments:
+    for filename, attachment in message_attachments.items():
         file_path = attachment["filepath"]
         media_type = attachment["mediatype"]
         media_subtype = attachment["mediasubtype"]
@@ -81,12 +81,15 @@ async def digest_attachments(message_attachments):
         if media_type == "text":
             charset = params.get("charset", "utf-8")
 
-            text_string = f"\n```{attachment}\n"
+            text_string = f"\n```{filename}\n"
 
             with file_path.open("r", encoding=charset, errors="replace") as f:
                 content = f.read()
 
             text_string += (content + "\n```")
             text_data.append(text_string)
+
+        # clean up
+        os.remove(file_path)
 
     return text_data, image_data
