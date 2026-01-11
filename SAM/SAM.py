@@ -128,14 +128,19 @@ async def sam_converse_files(text_data=None, image_data=None):
 
     text_data_prompt = ""
     if text_data is not None:
-        text_data_prompt = "The user has provided the following file context/s to help form a response to their message:\n" + text_data
+        text_data_prompt = "\n\n(The user has provided the following file context/s to help form a response to their message:)\n" + text_data
 
-    system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data_prompt}
+    # system_prompt = {"role": "system", "content": SAM_personality + "\n\n" + chat_history_system_prompt + "\n\n" + text_data_prompt}
+    system_prompt = {"role": "system",
+                     "content": SAM_personality + "\n\n" + chat_history_system_prompt}
 
     full_prompt = [
         system_prompt,
         *[build_role_message(entry) for entry in chat_log]  # Store an array of role-tagged turns
     ]
+
+    full_prompt[-1]["content"] += text_data_prompt
+    print(full_prompt[-1]["content"])
 
     response = await asyncio.to_thread(
         chat,

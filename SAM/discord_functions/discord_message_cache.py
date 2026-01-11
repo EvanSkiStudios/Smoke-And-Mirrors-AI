@@ -176,7 +176,7 @@ async def message_history_cache(client, message):
             history_prompts = []
             async for past_message in channel.history(limit=20):
 
-                if message.author in bots_blacklist:
+                if past_message.author in bots_blacklist:
                     continue
                 # ignore embeds and empty messages
                 if past_message.content == "" and len(past_message.embeds) == 0:
