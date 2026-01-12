@@ -1,25 +1,27 @@
 import pytest
-from tools.weather_search.weather_determinator.weather_search_determinator import is_weather_request
+from tools.weather_search.weather_determinator.weather_search_determinator_new import (
+    is_weather_request
+)
 
 
 @pytest.mark.parametrize("text,expected", [
-    # --- Direct weather search questions with location ---
-    ("what is the weather search in New York?", True),
+    # --- Direct weather questions with location ---
+    ("what is the weather in New York?", True),
     ("is it cold in California?", True),
     ("how hot is it in Texas?", True),
-    ("tell me the weather search for Boston", True),
+    ("tell me the weather for Boston", True),
     ("what's the temperature in Florida?", True),
-    ("how's the weather search looking in Seattle?", True),
+    ("how's the weather looking in Seattle?", True),
 
-    # --- Queries without a location should NOT trigger ---
-    ("what's the weather_search today?", False),
+    # --- Weather questions WITHOUT location ---
+    ("what's the weather today?", False),
     ("how hot will it be tomorrow?", False),
     ("is it going to rain today?", False),
     ("will it snow this week?", False),
     ("how cold is it outside?", False),
-    ("how's the weather_search looking?", False),
+    ("how's the weather looking?", False),
 
-    # --- Non-weather_search statements should NOT trigger ---
+    # --- Non-weather statements ---
     ("i like warm blankets", False),
     ("that forecast was wrong yesterday", False),
     ("storm is a cool superhero name", False),
@@ -27,7 +29,7 @@ from tools.weather_search.weather_determinator.weather_search_determinator impor
     ("cloudy with a chance of meatballs is a movie", False),
     ("today is going to be fun", False),
     ("the temperature is pretty warm", False),
-    ("with the temperature in mind", False)
+    ("with the temperature in mind", False),
 ])
 def test_is_weather_request(text, expected):
-    assert is_weather_request(text) == expected
+    assert is_weather_request(text, True) == expected

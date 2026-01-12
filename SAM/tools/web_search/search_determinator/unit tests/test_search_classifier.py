@@ -61,8 +61,8 @@ for i, pat in enumerate(SEARCH_PATTERNS, 1):
     ("the web is vast and complex", False),
 
     # --- Bot checks ---
-    ('colt do a search for "Evanski Studios"', True),
-    ('colt do a web search for "Evanski Studios"', True),
+    ('sam do a search for "Evanski Studios"', True),
+    ('sam do a web search for "Evanski Studios"', True),
 ])
 def test_is_search_request(text, expected):
     assert is_search_request(text) == expected
