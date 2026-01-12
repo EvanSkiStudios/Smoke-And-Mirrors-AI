@@ -15,12 +15,10 @@ from discord_functions.utility.download_discord_attachments import download_atta
 from message_logs.log_message import log_message
 from tools.determine_request import classify_request
 from tools.text_to_speech.tts_message_helpers import send_tts, message_is_tts
-from tools.vision.gemma_vision import vision_download_image
 from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search
 from utility_scripts.system_logging import setup_logger
 from SAM import sam_create, sam_message
-from utility_scripts.utility import parse_mime_type
 
 # configure logging
 logger = setup_logger(__name__)
@@ -60,9 +58,11 @@ class MyBot(commands.Bot):
             "discord_functions.cogs.bot_commands",
             "discord_functions.cogs.slash_commands.analyze",
             "discord_functions.cogs.slash_commands.delete",
+            "discord_functions.cogs.slash_commands.help",
             "discord_functions.cogs.slash_commands.neuralize",
             "discord_functions.cogs.slash_commands.parrot",
             "discord_functions.cogs.slash_commands.search",
+            "discord_functions.cogs.slash_commands.status",
             "discord_functions.cogs.slash_commands.tts",
             "discord_functions.cogs.slash_commands.weather"
         ]
@@ -75,30 +75,11 @@ class MyBot(commands.Bot):
         await self.tree.sync(guild=guild)  # sync them instantly
 
 
-command_prefixes = ["$s "]
 client = MyBot(
-    command_prefix=command_prefixes,
+    command_prefix=["$s "],
     intents=intents,
     status=discord.Status.online
 )
-
-
-class MyHelpCommand(commands.HelpCommand):
-    async def send_bot_help(self, mapping):
-        help_message = f"""
-For Full documentation see: [The Github Repo](<https://github.com/EvanSkiStudios/SAM-2.0>)
-Commands are issued like so: `{command_prefixes}<command> <argument>`
-```Here are my commands:
-"""
-        for command_cog, commands_list in mapping.items():
-            for command in commands_list:
-                help_message += f"`{command.name}` - {command.help or 'No description'}\n"
-        help_message += "```"
-        await self.get_destination().send(help_message)
-
-
-# assign help command from bot_commands
-client.help_command = MyHelpCommand()
 
 # Startup LLM
 sam_create()
@@ -239,7 +220,7 @@ async def on_message(message):
 
     await client.process_commands(message)
 
-    if any(message.content.startswith(prefix) for prefix in command_prefixes):
+    if any(message.content.startswith(prefix) for prefix in ["$s "]):
         return
 
     if message.content == "" and len(message.embeds) != 0:
