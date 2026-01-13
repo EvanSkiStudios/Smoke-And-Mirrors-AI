@@ -138,7 +138,7 @@ async def sam_converse_files(text_data=None, image_data=None):
         messages=full_prompt,
         options={
             'num_ctx': 16384,
-            'temperature': 0.5,
+            'temperature': 1,
             'think': True
         },
         stream=False

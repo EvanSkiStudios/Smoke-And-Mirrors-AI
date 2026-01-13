@@ -15,8 +15,18 @@ tool_model = 'huihui_ai/llama3.2-abliterate'
 chat_model = 'SAM-deepseek-r1'
 
 
-def get_the_weather(city, state):
-    return get_weather(city, state)
+def get_the_weather(state: str, city: str = None) -> dict:
+    """
+    Returns a dict of information from the given city and/or state
+    :param state: The state to get weather info from
+    :param city: (Optional) city in the given state otherwise defaults to capital
+    :return: dict {
+        "location": {city}, {state}",
+        "summary": {current['name']}: {current['temperature']} {current['temperatureUnit']}, {current['shortForecast']},
+        "details": current["detailedForecast"]}
+    """
+
+    return get_weather(state, city)
 
 
 available_functions = {
@@ -26,9 +36,15 @@ available_functions = {
 system_prompt = f"""
 {sam_config.SAM_personality}
 
-You will be given the results of a weather_search search.
-Respond with the full results in detail.
-Always try to provide a neutral and informative response.
+Input:
+- You will be given the results of a weather search tool call.
+
+Behavior:
+- Reply with the results of the tool call.
+- Do not invent information that is not in the results.
+
+Output:
+- Relay the results of the tool call.
 """
 
 
@@ -38,9 +54,8 @@ async def weather_search(message):
     ]
     response: ChatResponse = await asyncio.to_thread(
         chat,
-        tool_model,
+        model=tool_model,
         messages=messages,
-        # tools=[search_the_web, search_wikipedia],
         tools=[get_the_weather],
         options={'temperature': 0.2},  # Make responses less or more deterministic
         stream=False
@@ -69,11 +84,29 @@ async def weather_search(message):
         messages.append({'role': 'tool', 'content': str(output), 'tool_name': tool.function.name})
 
         # Get final response from model with function outputs
-        final_response = chat(chat_model, stream=False, messages=[{'role': 'system', 'content': system_prompt}] + messages)
+        final_response = chat(
+            model=chat_model,
+            messages=[{'role': 'system', 'content': system_prompt}] + messages,
+            stream=False,
+            options={
+                'num_ctx': 16384,
+                'temperature': 0.5,
+                'think': False
+            }
+        )
         # print('Final response:', final_response.message.content)
     else:
         logger.info(f'No tool calls returned from model')
-        final_response = chat(chat_model, stream=False, messages=[{'role': 'system', 'content': system_prompt}] + messages)
+        final_response = chat(
+            model=chat_model,
+            messages=[{'role': 'system', 'content': system_prompt}] + messages,
+            stream=False,
+            options={
+                'num_ctx': 16384,
+                'temperature': 0.5,
+                'think': False
+            }
+        )
 
     output = final_response.message.content
     output = re.sub(r'\bEvanski_\b', 'Evanski', output, flags=re.IGNORECASE)
@@ -91,7 +124,8 @@ async def weather_search(message):
     cleaned = output.replace("'", "\\'")
     return {
         "content": split_response(cleaned),
-        "message": final_response
+        "message": final_response,
+        "prompt": system_prompt
     }
 
 

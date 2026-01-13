@@ -1,5 +1,5 @@
 import pytest
-from tools.weather_search.weather_determinator.weather_search_determinator_new import (
+from tools.weather_search.weather_determinator.weather_search_determinator import (
     is_weather_request
 )
 
@@ -12,6 +12,7 @@ from tools.weather_search.weather_determinator.weather_search_determinator_new i
     ("tell me the weather for Boston", True),
     ("what's the temperature in Florida?", True),
     ("how's the weather looking in Seattle?", True),
+    ("sam what is the current weather in Hawaii", True),
 
     # --- Weather questions WITHOUT location ---
     ("what's the weather today?", False),

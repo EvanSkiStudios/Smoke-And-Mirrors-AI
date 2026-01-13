@@ -138,6 +138,16 @@ async def llm_chat(message):
         logger.info(f"Classification={request_classification}, Content={message_content}")
 
         match request_classification:
+            case "attachment":
+                loop = asyncio.get_event_loop()
+                gathered_attachments = await loop.run_in_executor(None, download_attachments, message_attachments)
+
+                if not gathered_attachments:
+                    logger.error("Attachments missing- reverting to basic chat")
+                    response = await sam_message()
+                else:
+                    response = await sam_message(message_attachments=gathered_attachments)
+
             case "weather_search":
                 logger.warning(f"Weather Search")
                 logger.info(message.content)
@@ -147,16 +157,6 @@ async def llm_chat(message):
                 logger.warning(f"WEB Search")
                 logger.info(message.content)
                 response = await llm_internet_search(message_content)
-
-            case "attachment":
-                loop = asyncio.get_event_loop()
-                gathered_attachments = await loop.run_in_executor(None, download_attachments, message_attachments)
-
-                if not gathered_attachments:
-                    logger.error("Attachments missing- reverting to basic chat")
-                    response = await sam_message()
-
-                response = await sam_message(message_attachments=gathered_attachments)
 
             case _:
                 response = await sam_message()
@@ -206,7 +206,12 @@ async def llm_chat(message):
     else:
         thinking = "No Thinking"
 
-    await log_message(sent_message, thinking, user_message, response["prompt"])
+    if hasattr(msg, "prompt"):
+        prompt = response["prompt"]
+    else:
+        prompt = {"role": "system", "content": "ERR NO PROMPT GIVEN"}
+
+    await log_message(sent_message, thinking, user_message, prompt)
 
 
 @client.event
