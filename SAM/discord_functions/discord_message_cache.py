@@ -90,7 +90,6 @@ class CachedBotMessage:
 
 # used for conversations
 current_session_chat_cache = deque(maxlen=40)
-current_turn_number = 0
 
 
 def session_chat_cache():
@@ -99,9 +98,8 @@ def session_chat_cache():
 
 
 def clear_chat_cache():
-    global current_session_chat_cache, current_turn_number
+    global current_session_chat_cache
     current_session_chat_cache.clear()
-    current_turn_number = 0
 
 
 # Create a lock
