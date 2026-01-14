@@ -12,7 +12,7 @@ REQUEST_VERBS = {
     "tell", "check", "give", "show", "get", "forecast", "look"
 }
 
-INTERROGATIVE_WORDS = {"what", "how", "is", "are", "will", "can", "should"}
+INTERROGATIVE_WORDS = {"what", "whats", "how", "is", "are", "will", "can", "should"}
 
 def _has_weather_intent(doc) -> bool:
     # Explicit question mark

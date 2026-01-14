@@ -1,4 +1,5 @@
 import asyncio
+import json
 import re
 
 from ollama import ChatResponse, chat
@@ -18,14 +19,7 @@ chat_model = 'SAM-deepseek-r1'
 def get_the_weather(state: str, city: str = None) -> dict:
     """
     Returns a dict of information from the given city and/or state
-    :param state: The state to get weather info from
-    :param city: (Optional) city in the given state otherwise defaults to capital
-    :return: dict {
-        "location": {city}, {state}",
-        "summary": {current['name']}: {current['temperature']} {current['temperatureUnit']}, {current['shortForecast']},
-        "details": current["detailedForecast"]}
     """
-
     return get_weather(state, city)
 
 
@@ -33,18 +27,29 @@ available_functions = {
     'get_the_weather': get_the_weather,
 }
 
+# Updated system prompt
 system_prompt = f"""
 {sam_config.SAM_personality}
 
-Input:
-- You will be given the results of a weather search tool call.
+All weather information from tool calls is provided between __TOOL_DATA__ and __END_TOOL_DATA__. 
+Rules:
+1. Only use the information inside __TOOL_DATA__ and __END_TOOL_DATA__.
+2. Do not invent, guess, or assume any facts that are not explicitly included.
+3. You may write in natural, conversational language, but every statement must come from the input.
+4. Do not add extra locations, times, temperatures, weather conditions, or wind details not present.
+5. Include all facts provided; do not omit anything.
 
-Behavior:
-- Reply with the results of the tool call.
-- Do not invent information that is not in the results.
+Example input:
+__TOOL_DATA__
+{{
+  "location": "Columbus, Ohio",
+  "summary": "Tonight: 40 F, Mostly Cloudy",
+  "details": "Mostly cloudy, with a low around 40. Southwest wind 6 to 13 mph, with gusts as high as 24 mph."
+}}
+__END_TOOL_DATA__
 
-Output:
-- Relay the results of the tool call.
+Example output:
+In Columbus, Ohio, tonight it will be mostly cloudy with a low around 40°F. Southwest winds will range from 6 to 13 mph, with gusts up to 24 mph.
 """
 
 
@@ -57,69 +62,50 @@ async def weather_search(message):
         model=tool_model,
         messages=messages,
         tools=[get_the_weather],
-        options={'temperature': 0.2},  # Make responses less or more deterministic
+        options={'temperature': 0.2},  # deterministic
         stream=False
     )
 
+    tool_output = None
     if response.message.tool_calls:
-        # There may be multiple tool calls in the response
         for tool in response.message.tool_calls:
-            # Ensure the function is available, and then call it
             if function_to_call := available_functions.get(tool.function.name):
-                debug_print = (
-                    f'Calling function: {tool.function.name}' + '\n'
-                    f'Arguments: {tool.function.arguments}'
-                )
-                logger.info(debug_print)
-
-                output = function_to_call(**tool.function.arguments)
-                logger.info(f'Function output: {output}')
+                logger.info(f'Calling function: {tool.function.name}\nArguments: {tool.function.arguments}')
+                tool_output = function_to_call(**tool.function.arguments)
+                logger.info(f'Function output: {tool_output}')
             else:
                 logger.error(f'Function {tool.function.name} not found')
 
-    # Only needed to chat with the model using the tool call results
-    if response.message.tool_calls:
-        # Add the function response to messages for the model to use
-        messages.append(response.message)
-        messages.append({'role': 'tool', 'content': str(output), 'tool_name': tool.function.name})
-
-        # Get final response from model with function outputs
-        final_response = chat(
-            model=chat_model,
-            messages=[{'role': 'system', 'content': system_prompt}] + messages,
-            stream=False,
-            options={
-                'num_ctx': 16384,
-                'temperature': 0.5,
-                'think': False
-            }
-        )
-        # print('Final response:', final_response.message.content)
+    if tool_output:
+        # Wrap JSON in special markers for the model
+        tool_message_content = f"__TOOL_DATA__\n{json.dumps(tool_output)}\n__END_TOOL_DATA__"
+        messages.append({'role': 'tool', 'content': tool_message_content, 'tool_name': tool.function.name})
     else:
-        logger.info(f'No tool calls returned from model')
-        final_response = chat(
-            model=chat_model,
-            messages=[{'role': 'system', 'content': system_prompt}] + messages,
-            stream=False,
-            options={
-                'num_ctx': 16384,
-                'temperature': 0.5,
-                'think': False
-            }
-        )
+        logger.info("No tool output available to pass to the model.")
+
+    # Final model call with system prompt
+    final_response: ChatResponse = chat(
+        model=chat_model,
+        messages=[{'role': 'system', 'content': system_prompt}] + messages,
+        stream=False,
+        options={
+            'num_ctx': 16384,
+            'temperature': 0.2,  # low for deterministic output
+            'think': True
+        }
+    )
 
     output = final_response.message.content
     output = re.sub(r'\bEvanski_\b', 'Evanski', output, flags=re.IGNORECASE)
 
     logger.info(response)
     logger.info(final_response)
-    debug_print = (f"""
+    logger.info(f"""
     ===================================
     CONTENT:  {message}\n
     RESPONSE:  {output}
     ===================================
     """)
-    logger.info(debug_print)
 
     cleaned = output.replace("'", "\\'")
     return {
@@ -133,7 +119,7 @@ async def weather_search(message):
 # TESTING
 # ===============
 async def main():
-    query = "whats the weather_search in North Dakota?"
+    query = "whats the weather_search in Hell Gate, Georgia?"
     response = await weather_search(query)
     print(response)
 

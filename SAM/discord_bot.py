@@ -1,24 +1,34 @@
+# Standard library
 import asyncio
 import os
 import re
-
-import discord
-
-from discord.ext import commands
-from dotenv import load_dotenv
 from types import SimpleNamespace
 
+# Third-party
+import discord
+from discord.ext import commands
+from dotenv import load_dotenv
+
+# Project / local
+from SAM import sam_create, sam_message
+
 from discord_functions.discord_bot_users_manager import handle_bot_message
+from discord_functions.discord_message_cache import (
+    CachedBotMessage,
+    message_history_cache,
+    should_ignore_message,
+)
 from discord_functions.utility.discord_helpers import get_message_attachments
-from discord_functions.discord_message_cache import should_ignore_message, message_history_cache, CachedBotMessage
 from discord_functions.utility.download_discord_attachments import download_attachments
+
 from message_logs.log_message import log_message
+
 from tools.determine_request import classify_request
-from tools.text_to_speech.tts_message_helpers import send_tts, message_is_tts
+from tools.text_to_speech.tts_message_helpers import message_is_tts, send_tts
 from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search
+
 from utility_scripts.system_logging import setup_logger
-from SAM import sam_create, sam_message
 
 # configure logging
 logger = setup_logger(__name__)
@@ -206,12 +216,7 @@ async def llm_chat(message):
     else:
         thinking = "No Thinking"
 
-    if hasattr(msg, "prompt"):
-        prompt = response["prompt"]
-    else:
-        prompt = {"role": "system", "content": "ERR NO PROMPT GIVEN"}
-
-    await log_message(sent_message, thinking, user_message, prompt)
+    await log_message(sent_message, thinking, user_message, response["prompt"])
 
 
 @client.event
