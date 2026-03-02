@@ -175,6 +175,7 @@ async def message_history_cache(client, message):
             async for past_message in channel.history(limit=20):
 
                 if past_message.author in bots_blacklist:
+                    # todo -- remove messages from users that are replies to / mention, banned bots
                     continue
                 # ignore embeds and empty messages
                 if past_message.content == "" and len(past_message.embeds) == 0:

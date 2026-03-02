@@ -15,7 +15,7 @@ search_model = 'huihui_ai/llama3.2-abliterate'
 chat_model = 'huihui_ai/deepseek-r1-abliterated'
 
 
-def search_the_web(query):
+def search_the_web(query: str) -> list:
     return google_search(query)
 
 
@@ -87,4 +87,8 @@ async def llm_internet_search(message):
     """)
     logger.info(debug_print)
 
-    return split_response(output)
+    return {
+        "content": split_response(output),
+        "message": final_response,
+        "prompt": system_prompt
+    }
