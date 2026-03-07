@@ -96,12 +96,12 @@ async def _generate_response(message, message_content):
     # ---------------------------------
     # Attachment detection
     # ---------------------------------
-    message_attachments = get_message_attachments(message)
+    request_type, *attachments = classify_request(message, message_content)
 
-    if message_attachments:
-        request_type = "attachment"
+    if attachments:
+        message_attachments = attachments[0]
     else:
-        request_type = classify_request(message_content)
+        message_attachments = None
 
     logger.info(f"Classification={request_type}, Content={message_content}")
 
@@ -110,6 +110,9 @@ async def _generate_response(message, message_content):
     # ---------------------------------
     match request_type:
 
+        # ---------------------------------
+        # attachments
+        # ---------------------------------
         case "attachment":
             loop = asyncio.get_event_loop()
             gathered = await loop.run_in_executor(
@@ -124,14 +127,23 @@ async def _generate_response(message, message_content):
 
             return await sam_message(message_attachments=gathered)
 
+        # ---------------------------------
+        # weather
+        # ---------------------------------
         case "weather_search":
             logger.info("Weather search triggered")
             return await weather_search(message_content)
 
+        # ---------------------------------
+        # web search
+        # ---------------------------------
         case "search":
             logger.info("Web search triggered")
             return await llm_internet_search(message_content)
 
+        # ---------------------------------
+        # default chat
+        # ---------------------------------
         case _:
             return await sam_message()
 
@@ -142,11 +154,10 @@ async def _generate_response(message, message_content):
 
 async def _send_response(bot, message, response, is_tts_message):
     """
-    Handles sending multi-part responses to Discord.
+    Handles sending multipart responses to Discord.
     """
 
     response_content = response["content"]
-    full_response = " ".join(response_content)
 
     sent_message = None
 

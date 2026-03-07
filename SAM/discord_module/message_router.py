@@ -1,13 +1,10 @@
 import re
 import discord
 
-from discord_functions.discord_message_cache import (
-    message_history_cache,
-    should_ignore_message,
-)
+from discord_functions.discord_message_cache import message_history_cache
 
 from discord_module.llm_handler import llm_chat
-
+from discord_module.message_filters import should_ignore_message
 
 COMMAND_PREFIXES = ["$s "]
 
@@ -51,18 +48,23 @@ async def route_message(bot, message):
     # ---------------------------------
     # 4. Gather Cache
     # ---------------------------------
-    await message_history_cache(bot, message)
+    # await message_history_cache(bot, message)
+    # channel_session_cache = await channel_cache_save_user_message(bot, message)
 
     # ---------------------------------
     # 5. Hard Routing Decisions
     # ---------------------------------
 
+    # ---------------------------------
     # Direct Message
+    # ---------------------------------
     if isinstance(message.channel, discord.DMChannel):
         await llm_chat(bot, message)
         return
 
+    # ---------------------------------
     # Reply to bot message
+    # ---------------------------------
     # todo -- Supply copy of referenced message to keep context
     if message.reference and message.type != discord.MessageType.thread_created:
         try:
@@ -82,7 +84,9 @@ async def route_message(bot, message):
         except discord.NotFound:
             return
 
+    # ---------------------------------
     # Bot mention
+    # ---------------------------------
     if bot.user.mentioned_in(message):
         await llm_chat(bot, message)
         return

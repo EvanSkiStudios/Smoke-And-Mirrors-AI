@@ -3,7 +3,7 @@ import re
 
 from ollama import ChatResponse, chat
 
-import sam_config
+from llm_module.system_prompts import personality_system_prompt
 from tools.web_search.google_websearch import google_search
 from utility_scripts.utility import split_response
 from utility_scripts.system_logging import setup_logger
@@ -24,7 +24,7 @@ available_functions = {
 }
 
 system_prompt = f"""
-{sam_config.SAM_personality}
+{personality_system_prompt}
 Always try to provide a neutral and informative response.
 You will be given a list of results from a google search. Use the results for your response.
 Make sure to include the url's of the results in your response.

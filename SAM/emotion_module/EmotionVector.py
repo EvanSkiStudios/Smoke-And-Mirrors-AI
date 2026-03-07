@@ -1,4 +1,4 @@
-from emotion_controler.Emotions import Emotion
+from emotion_module.Emotions import Emotion
 
 EPSILON = 1e-6  # Small threshold for floating-point comparisons
 # 0.000001

@@ -1,3 +1,5 @@
+import asyncio
+
 from discord_module.message_router import route_message
 
 from utility_scripts.system_logging import setup_logger
@@ -5,6 +7,10 @@ from utility_scripts.system_logging import setup_logger
 
 # configure logging
 logger = setup_logger(__name__)
+
+
+# Create a lock
+lock = asyncio.Lock()
 
 
 def register_events(bot):
@@ -22,5 +28,5 @@ def register_events(bot):
 
     @bot.event
     async def on_message(message):
-        await route_message(bot, message)
-
+        async with lock:
+            await route_message(bot, message)

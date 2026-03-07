@@ -32,9 +32,12 @@ class MyBot(commands.Bot):
             await self.load_extension(cog)
 
         # 👇 Sync all commands to one guild
-        guild = discord.Object(id=CONFIG.SERVERS.GMCD_SERVER_ID)
-        self.tree.copy_global_to(guild=guild)  # copy any global commands
-        await self.tree.sync(guild=guild)  # sync them instantly
+        # guild = discord.Object(id=CONFIG.SERVERS.GMCD_SERVER_ID)
+        # self.tree.copy_global_to(guild=guild)  # copy any global commands
+        #  await self.tree.sync(guild=guild)  # sync them instantly
+
+        # Global (takes time to propagate)
+        await self.tree.sync()
 
 
 def create_bot():

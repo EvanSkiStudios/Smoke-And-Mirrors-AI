@@ -4,7 +4,7 @@ import re
 
 from ollama import ChatResponse, chat
 
-import sam_config
+from llm_module.system_prompts import personality_system_prompt
 from tools.weather_search.weather_api import get_weather
 from utility_scripts.utility import split_response
 from utility_scripts.system_logging import setup_logger
@@ -29,7 +29,7 @@ available_functions = {
 
 # Updated system prompt
 system_prompt = f"""
-{sam_config.SAM_personality}
+{personality_system_prompt}
 
 All weather information from tool calls is provided between __TOOL_DATA__ and __END_TOOL_DATA__. 
 Rules:
