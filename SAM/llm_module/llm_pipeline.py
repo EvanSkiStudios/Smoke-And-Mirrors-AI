@@ -6,7 +6,6 @@ from discord_functions.discord_message_cache import (
     message_history_cache,
 )
 
-from discord_functions.utility.discord_helpers import get_message_attachments
 from discord_functions.utility.download_discord_attachments import download_attachments
 
 from message_logs.log_message import log_message

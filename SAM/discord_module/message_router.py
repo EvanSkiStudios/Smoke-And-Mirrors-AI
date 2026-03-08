@@ -1,9 +1,7 @@
 import re
 import discord
 
-from discord_functions.discord_message_cache import message_history_cache
-
-from discord_module.llm_handler import llm_chat
+from llm_module.llm_pipeline import llm_chat
 from discord_module.message_filters import should_ignore_message
 
 COMMAND_PREFIXES = ["$s "]
