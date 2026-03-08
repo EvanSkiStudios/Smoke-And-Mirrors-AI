@@ -1,6 +1,7 @@
 import discord
 
 from discord_module.message_filters import bots_blacklist, message_is_slash_reply
+from memory_module.process_message import process_message
 
 
 # filters message based on rules
