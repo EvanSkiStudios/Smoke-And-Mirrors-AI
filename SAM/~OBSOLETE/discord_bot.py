@@ -10,7 +10,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 # Project / local
-from SAM import sam_create, sam_message
+from obsolete_SAM import sam_create, sam_message
 
 from discord_functions.discord_bot_users_manager import handle_bot_message
 from discord_functions.discord_message_cache import (

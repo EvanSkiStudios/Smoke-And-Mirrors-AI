@@ -1,5 +1,6 @@
 import os
 import sys
+from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from ollama import Client
@@ -15,18 +16,35 @@ load_dotenv()
 os.environ["OLLAMA_API_KEY"] = os.getenv("OLLAMA_API")
 
 
+def ns(d: dict) -> SimpleNamespace:
+    return SimpleNamespace(**{
+        k: ns(v) if isinstance(v, dict) else v for k, v in d.items()
+    })
+
+
 # model settings for easy swapping
-model_name = 'SAM'
-ollama_model = 'huihui_ai/deepseek-r1-abliterated'
-vision_model = 'qwen3-vl'
+llm_config = {
+    "SAM": {
+        "MODEL_NAME": "SAM",
+        "OLLAMA_MODEL": "huihui_ai/deepseek-r1-abliterated",
+        "VISION_MODEL": "qwen3-vl",
+        "DEFAULT_CONTEXT": 16384,
+        "DEFAULT_TEMPERATURE": 0.5
+    }
+}
+LLM_CONFIG = ns(llm_config)
+
+
+def get_llm_config():
+    return LLM_CONFIG
 
 
 def llm_create():
     try:
         client = Client()
         response = client.create(
-            model=model_name,
-            from_=ollama_model,
+            model=LLM_CONFIG.SAM.MODEL_NAME,
+            from_=LLM_CONFIG.SAM.OLLAMA_MODEL,
             system=personality_system_prompt,
             stream=False,
         )

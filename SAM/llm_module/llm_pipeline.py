@@ -1,11 +1,6 @@
 import asyncio
 
-from discord_functions.discord_bot_users_manager import handle_bot_message
-from discord_functions.discord_message_cache import (
-    CachedBotMessage,
-    message_history_cache,
-)
-
+from discord_functions.discord_bot_users_manager import bot_message_cooldown
 from discord_functions.utility.download_discord_attachments import download_attachments
 
 from message_logs.log_message import log_message
@@ -15,7 +10,6 @@ from tools.text_to_speech.tts_message_helpers import message_is_tts, send_tts
 from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search
 
-from SAM import sam_message
 from utility_scripts.system_logging import setup_logger
 
 
@@ -43,7 +37,7 @@ async def llm_chat(bot, message):
     # 1. Prevent bot loops
     # --------------------------------------------------------
     if message.author.bot:
-        result = handle_bot_message(username)
+        result = bot_message_cooldown(username)
         if result == -1:
             return
 
@@ -207,8 +201,7 @@ async def _post_process(bot, message, response, sent_message):
     full_response = " ".join(response["content"])
 
     # Cache assistant message
-    cached_msg = CachedBotMessage(bot.user, full_response)
-    await message_history_cache(bot, cached_msg)
+    # add users message to cache, then add assistant's response
 
     # Prepare log data
     user_message = {

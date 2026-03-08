@@ -44,13 +44,7 @@ async def route_message(bot, message):
         return
 
     # ---------------------------------
-    # 4. Gather Cache
-    # ---------------------------------
-    # await message_history_cache(bot, message)
-    # channel_session_cache = await channel_cache_save_user_message(bot, message)
-
-    # ---------------------------------
-    # 5. Hard Routing Decisions
+    # 4. Hard Routing Decisions
     # ---------------------------------
 
     # ---------------------------------
@@ -90,7 +84,7 @@ async def route_message(bot, message):
         return
 
     # ---------------------------------
-    # 6. Keyword Trigger ("sam")
+    # 5. Keyword Trigger ("sam")
     # ---------------------------------
     message_content = message.clean_content
 

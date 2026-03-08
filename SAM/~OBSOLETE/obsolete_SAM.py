@@ -48,8 +48,7 @@ def sam_create():
 
 
 # === Main Entry Point ===
-async def sam_message(message_author_name=None, message_author_nickname=None, message_content=None, image_file=None,
-                      message_attachments=None) -> dict[str, any]:
+async def sam_message(message_attachments=None) -> dict[str, any]:
     """
     :return: dict [
     message content: string,

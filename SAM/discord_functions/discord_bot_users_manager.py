@@ -11,7 +11,7 @@ MAX_MESSAGES = 2
 COOLDOWN_SECONDS = 60
 
 
-def handle_bot_message(username):
+def bot_message_cooldown(username):
     now = time.time()
 
     # Initialize user if not exists
