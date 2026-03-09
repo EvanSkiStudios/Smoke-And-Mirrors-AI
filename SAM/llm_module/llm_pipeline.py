@@ -2,6 +2,8 @@ import asyncio
 
 from discord_functions.discord_bot_users_manager import bot_message_cooldown
 from discord_functions.utility.download_discord_attachments import download_attachments
+from llm_module.llm_generate import llm_generate_chat_response
+from memory_module.process_message import process_message
 
 from message_logs.log_message import log_message
 
@@ -50,7 +52,7 @@ async def llm_chat(bot, message):
     # 3. Generate AI response
     # --------------------------------------------------------
     async with message.channel.typing():
-        response = await _generate_response(message, message_content)
+        response = await _generate_response(bot, message, message_content)
 
     if not response:
         return
@@ -72,7 +74,7 @@ async def llm_chat(bot, message):
         bot=bot,
         message=message,
         response=response,
-        sent_message=sent_message
+        sent_message=sent_message,
     )
 
 
@@ -80,7 +82,7 @@ async def llm_chat(bot, message):
 # RESPONSE GENERATION
 # ============================================================
 
-async def _generate_response(message, message_content):
+async def _generate_response(bot, message, message_content):
     """
     Determines which backend should handle the request
     and returns a standardized response object.
@@ -116,7 +118,7 @@ async def _generate_response(message, message_content):
 
             if not gathered:
                 logger.error("Attachment download failed. Falling back to default chat.")
-                return await sam_message()
+                return await llm_generate_chat_response(bot, message)
 
             return await sam_message(message_attachments=gathered)
 
@@ -138,7 +140,7 @@ async def _generate_response(message, message_content):
         # default chat
         # ---------------------------------
         case _:
-            return await sam_message()
+            return await llm_generate_chat_response(bot, message)
 
 
 # ============================================================
@@ -198,10 +200,10 @@ async def _post_process(bot, message, response, sent_message):
     - Logging metadata
     """
 
-    full_response = " ".join(response["content"])
-
-    # Cache assistant message
     # add users message to cache, then add assistant's response
+    chat_history = response.get("history")
+    chat_history.append(await process_message(bot, message))
+    chat_history.append({'role': 'assistant', 'content': response.get("message").content})
 
     # Prepare log data
     user_message = {
@@ -217,6 +219,7 @@ async def _post_process(bot, message, response, sent_message):
         sent_message,
         thinking,
         user_message,
-        response.get("prompt")
+        response.get("prompt"),
+        chat_history
     )
 

@@ -3,10 +3,11 @@ from typing import Any
 from discord_functions.utility.download_discord_attachments import digest_attachments
 from llm_module.llm_generate import run_model
 from llm_module.system_prompts import personality_system_prompt, chat_history_system_prompt
+from memory_module.message_history import get_channel_message_cache
 from utility_scripts.utility import split_response
 
 
-def build_prompt(file_text: str | None = None):
+async def build_prompt(file_text: str | None = None):
 
     file_context = ""
 
@@ -25,6 +26,8 @@ def build_prompt(file_text: str | None = None):
             + file_context
         )
     }
+
+    message_cache = await get_channel_message_cache(bot, message)
 
     messages = [
         system_prompt,

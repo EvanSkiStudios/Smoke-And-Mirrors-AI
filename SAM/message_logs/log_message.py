@@ -1,7 +1,6 @@
 from pathlib import Path
 from datetime import datetime
 
-from discord_functions.discord_message_cache import session_chat_cache
 from utility_scripts.system_logging import setup_logger
 
 # configure logging
@@ -34,17 +33,14 @@ def format_details(summary: str, content: str) -> str:
     )
 
 
-async def log_message(sent_message, thinking: str, user_message: dict, system_prompt: dict) -> None:
+async def log_message(sent_message, thinking: str, user_message: dict, system_prompt: dict, full_history: dict) -> None:
     save_dir = Path(__file__).resolve().parent / "logs"
     save_dir.mkdir(exist_ok=True)
 
     path = save_dir / f"{get_timestamp()}__{sent_message.id}.md"
 
-    chat_log = session_chat_cache()
-    chat_history = [build_role_message(entry) for entry in chat_log]
-
     full_chat_history = "\n".join(
-        f'{m["role"]}: {m["content"]}\n' for m in chat_history
+        f'{m["role"]}: {m["content"]}\n' for m in full_history
     )
 
     sys_prompt_string = (

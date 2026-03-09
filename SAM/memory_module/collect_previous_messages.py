@@ -32,6 +32,6 @@ async def gather_past_messages(bot, channel_id):
         if await skip_message(past_message):
             continue
 
-        messages.extend(await process_message(bot, past_message))
+        messages.append(await process_message(bot, past_message))
 
     return messages
