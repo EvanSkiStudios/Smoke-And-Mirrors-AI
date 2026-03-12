@@ -18,7 +18,7 @@ async def get_channel_message_cache(bot, message) -> list:
     channel_name = getattr(message.channel, "name", None)
 
     if channel_name is None:
-        channel_name = str(message.channel.recipient)
+        channel_name = str(message.author.name)
 
     logger.info(f'Getting Cache for {channel_name}')
 
