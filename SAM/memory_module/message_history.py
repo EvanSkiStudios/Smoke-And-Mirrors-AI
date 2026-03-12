@@ -6,8 +6,6 @@ logger = setup_logger(__name__)
 
 channels_dict = {}
 
-# todo -- Append users message, and assitant response to cache after we have created it
-
 
 # creates/gets the section in the dict for the channel
 def get_channel_cache(channel_id) -> list:
@@ -17,20 +15,25 @@ def get_channel_cache(channel_id) -> list:
 
 
 async def get_channel_message_cache(bot, message) -> list:
-    logger.info(f'Getting Cache for {message.channel.name}')
+    channel_name = getattr(message.channel, "name", None)
 
-    channel = bot.get_channel(message.channel.id)
-    channel_message_cache = get_channel_cache(channel)
+    if channel_name is None:
+        channel_name = str(message.channel.recipient)
+
+    logger.info(f'Getting Cache for {channel_name}')
+
+    channel_message_cache = get_channel_cache(message.channel.id)
 
     # if the cache is empty we will fill it with past messages
     if len(channel_message_cache) == 0:
         logger.info(f'Channel Cache Empty, generating...')
         # gather last 20 in channel
-        past_messages = await gather_past_messages(bot, channel)
+        past_messages = await gather_past_messages(bot, message)
+
         channel_message_cache.extend(past_messages)
         channel_message_cache.reverse()
         channel_message_cache.pop()  # remove last message as it should be what we just sent
 
-    logger.info(f'Channel Cache Complete')
+    logger.info(f'Channel Cache Complete, Gathered {len(channel_message_cache)} Messages')
     return channel_message_cache
 

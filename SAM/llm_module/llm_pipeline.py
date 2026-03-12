@@ -120,7 +120,7 @@ async def _generate_response(bot, message, message_content):
                 logger.error("Attachment download failed. Falling back to default chat.")
                 return await llm_generate_chat_response(bot, message)
 
-            return await sam_message(message_attachments=gathered)
+            # return await sam_message(message_attachments=gathered)
 
         # ---------------------------------
         # weather
@@ -202,11 +202,16 @@ async def _post_process(bot, message, response, sent_message):
 
     # add users message to cache, then add assistant's response
     chat_history = response.get("history")
-    chat_history.append(await process_message(bot, message))
-    chat_history.append({'role': 'assistant', 'content': response.get("message").content})
+
+    user_message = await process_message(bot, message)
+    bot_message = {'role': 'assistant', 'content': response.get("message").content}
+
+    # appends to the cache as well
+    chat_history.append(user_message)
+    chat_history.append(bot_message)
 
     # Prepare log data
-    user_message = {
+    user_message_log = {
         "id": message.id,
         "content": message.clean_content,
         "name": message.author.name
@@ -218,7 +223,7 @@ async def _post_process(bot, message, response, sent_message):
     await log_message(
         sent_message,
         thinking,
-        user_message,
+        user_message_log,
         response.get("prompt"),
         chat_history
     )

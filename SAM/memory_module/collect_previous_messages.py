@@ -23,10 +23,11 @@ async def skip_message(message):
     return False
 
 
-async def gather_past_messages(bot, channel_id):
+async def gather_past_messages(bot, message):
+    channel = message.channel
 
     messages = []
-    async for past_message in channel_id.history(limit=20):
+    async for past_message in channel.history(limit=20):
 
         # filter past messages
         if await skip_message(past_message):
