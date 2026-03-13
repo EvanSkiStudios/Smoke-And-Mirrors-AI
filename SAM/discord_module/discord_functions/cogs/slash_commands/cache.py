@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 
 
-import discord
 from discord import app_commands
 from discord.ext import commands
 
@@ -15,6 +14,7 @@ logger = setup_logger(__name__)
 
 # Load Env
 load_dotenv()
+
 
 def ns(d: dict) -> SimpleNamespace:
     """Convert dict into a dot-accessible namespace (recursively)."""

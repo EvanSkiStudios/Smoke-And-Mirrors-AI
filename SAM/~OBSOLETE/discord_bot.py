@@ -23,7 +23,7 @@ from discord_module.discord_functions.utility.download_discord_attachments impor
 
 from message_logs.log_message import log_message
 
-from tools.determine_request import classify_request
+from discord_module.determine_request import classify_request
 from tools.text_to_speech.tts_message_helpers import message_is_tts, send_tts
 from tools.weather_search.weather_tool import weather_search
 from tools.web_search.internet_tool import llm_internet_search

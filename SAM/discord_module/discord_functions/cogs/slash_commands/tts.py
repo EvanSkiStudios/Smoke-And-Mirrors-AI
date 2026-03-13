@@ -25,7 +25,7 @@ class TTS(commands.Cog):
         if not tts_file:
             logger.error('TTS Error')
 
-            # 🎲 Easter Egg: 1 in 100 chance to drop Colt-45 gag
+            # 🎲 Easter Egg: 1 in 100 chance to drop gag
             if random.randint(1, 100) == 45:
                 await interaction.followup.send('https://youtu.be/c4MAh9nCddc?t=5')
             else:
