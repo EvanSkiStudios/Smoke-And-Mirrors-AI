@@ -24,7 +24,7 @@ config_dict = {
     },
     "BOTS": {
         "SCUNGEONMASTER": os.getenv("BOT_ID_SCUNGE"),
-        "ARETE": os.getenv("BOT_ID_ARI")
+        "FOOTNOTE": os.getenv("BOT_ID_FOOTNOTE")
     }
 }
 CONFIG = ns(config_dict)

@@ -6,8 +6,6 @@ from collections import deque
 import discord
 
 
-
-
 class CachedBotMessage:
     def __init__(self, bot_user, content):
         self.author = bot_user          # The bot user

@@ -1,4 +1,4 @@
-from discord_functions.utility.discord_helpers import get_message_attachments
+from discord_module.discord_functions.utility.discord_helpers import get_message_attachments
 from tools.web_search.search_determinator.internet_search_determinator import is_search_request
 from tools.weather_search.weather_determinator.weather_search_determinator import is_weather_request
 

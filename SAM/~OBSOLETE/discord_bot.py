@@ -12,14 +12,14 @@ from dotenv import load_dotenv
 # Project / local
 from obsolete_SAM import sam_create, sam_message
 
-from discord_functions.discord_bot_users_manager import handle_bot_message
-from discord_functions.discord_message_cache import (
+from discord_module.discord_functions.discord_bot_users_manager import handle_bot_message
+from discord_module.discord_functions.discord_message_cache import (
     CachedBotMessage,
     message_history_cache,
     should_ignore_message,
 )
-from discord_functions.utility.discord_helpers import get_message_attachments
-from discord_functions.utility.download_discord_attachments import download_attachments
+from discord_module.discord_functions.utility.discord_helpers import get_message_attachments
+from discord_module.discord_functions.utility.download_discord_attachments import download_attachments
 
 from message_logs.log_message import log_message
 

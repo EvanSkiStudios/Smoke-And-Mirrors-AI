@@ -17,16 +17,17 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         # Load cogs here
         cogs = [
-            "discord_functions.cogs.bot_commands",
-            "discord_functions.cogs.slash_commands.analyze",
-            "discord_functions.cogs.slash_commands.delete",
-            "discord_functions.cogs.slash_commands.help",
-            "discord_functions.cogs.slash_commands.neuralize",
-            "discord_functions.cogs.slash_commands.parrot",
-            "discord_functions.cogs.slash_commands.search",
-            "discord_functions.cogs.slash_commands.status",
-            "discord_functions.cogs.slash_commands.tts",
-            "discord_functions.cogs.slash_commands.weather"
+            "discord_module.discord_functions.cogs.bot_commands",
+            "discord_module.discord_functions.cogs.slash_commands.analyze",
+            "discord_module.discord_functions.cogs.slash_commands.cache",
+            "discord_module.discord_functions.cogs.slash_commands.delete",
+            "discord_module.discord_functions.cogs.slash_commands.help",
+            "discord_module.discord_functions.cogs.slash_commands.neuralize",
+            "discord_module.discord_functions.cogs.slash_commands.parrot",
+            "discord_module.discord_functions.cogs.slash_commands.search",
+            "discord_module.discord_functions.cogs.slash_commands.status",
+            "discord_module.discord_functions.cogs.slash_commands.tts",
+            "discord_module.discord_functions.cogs.slash_commands.weather"
         ]
         for cog in cogs:
             await self.load_extension(cog)

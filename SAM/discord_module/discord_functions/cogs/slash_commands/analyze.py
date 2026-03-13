@@ -1,13 +1,29 @@
+import os
+from types import SimpleNamespace
+from dotenv import load_dotenv
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from discord_functions.utility.discord_helpers import get_message_attachments
-from discord_functions.utility.download_discord_attachments import download_attachments
 from utility_scripts.system_logging import setup_logger
 
 # configure logging
 logger = setup_logger(__name__)
+
+# Load Env
+load_dotenv()
+
+
+def ns(d: dict) -> SimpleNamespace:
+    """Convert dict into a dot-accessible namespace (recursively)."""
+    return SimpleNamespace(**{k: ns(v) if isinstance(v, dict) else v for k, v in d.items()})
+
+
+config_dict = {
+    "MASTER_USER_ID": os.getenv("MASTER_USER_ID"),
+}
+CONFIG = ns(config_dict)
 
 
 def analyze_message(message):
@@ -15,7 +31,8 @@ def analyze_message(message):
         "",
         f"ID: {message.id}",
         f"Author: {message.author}",
-        f"Type: {message.type}"
+        f"Type: {message.type}",
+        f"Content: {message.content}"
     ]
 
     if message.attachments:
@@ -48,6 +65,11 @@ class Analyze(commands.Cog):
     @app_commands.command(name="analyze", description="analyze messages")
     async def Analyze(self, interaction, message_id: str):
         logger.debug(f'Command issued: analyze {interaction.user} | Message: {message_id}')
+
+        if interaction.user.id != int(CONFIG.MASTER_USER_ID):
+            msg = await interaction.response.send_message("This is an Admin only command.",
+                                                          delete_after=6)
+            return
 
         try:
             msg_id = int(message_id)

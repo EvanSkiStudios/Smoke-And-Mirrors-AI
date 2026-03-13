@@ -5,9 +5,9 @@ import sys
 from dotenv import load_dotenv
 from ollama import Client, chat
 
-from discord_functions.utility.download_discord_attachments import digest_attachments
+from discord_module.discord_functions.utility.download_discord_attachments import digest_attachments
 from llm_module.system_prompts import personality_system_prompt, chat_history_system_prompt
-from discord_functions.discord_message_cache import session_chat_cache
+from discord_module.discord_functions.discord_message_cache import session_chat_cache
 from utility_scripts.system_logging import setup_logger
 from utility_scripts.utility import split_response
 

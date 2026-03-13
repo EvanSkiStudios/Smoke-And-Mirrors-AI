@@ -1,7 +1,7 @@
 import asyncio
 
-from discord_functions.discord_bot_users_manager import bot_message_cooldown
-from discord_functions.utility.download_discord_attachments import download_attachments
+from discord_module.discord_functions.discord_bot_users_manager import bot_message_cooldown
+from discord_module.discord_functions.utility.download_discord_attachments import download_attachments
 from llm_module.llm_generate import llm_generate_chat_response
 from memory_module.process_message import process_message
 
