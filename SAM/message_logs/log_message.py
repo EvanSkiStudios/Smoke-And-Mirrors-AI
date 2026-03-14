@@ -33,7 +33,7 @@ def format_details(summary: str, content: str) -> str:
     )
 
 
-async def log_message(sent_message, thinking: str, user_message: dict, system_prompt: dict, full_history: dict) -> None:
+async def log_message(sent_message, thinking: str, user_message: dict, system_prompt: dict, full_history: dict, text_data: str) -> None:
     save_dir = Path(__file__).resolve().parent / "logs"
     save_dir.mkdir(exist_ok=True)
 
@@ -54,6 +54,8 @@ async def log_message(sent_message, thinking: str, user_message: dict, system_pr
         f"User:    {user_message['name']}  "
         "\n"
         f"{format_details('Message Content', user_message['content'])}"
+        "\n"
+        f"{format_details('File Text Data', text_data)}"
         "\n"
         f"Message ID:    {sent_message.id}  "
         f"{format_details('Thinking', thinking)}"

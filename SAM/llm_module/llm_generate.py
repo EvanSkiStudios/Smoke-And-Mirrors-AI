@@ -28,8 +28,7 @@ async def sort_attachments(attachments):
 async def build_system_prompt(bot, message, message_cache, text_data):
     system_prompt = {
         "role": "system", "content":
-            # personality_system_prompt + "\n\n" + chat_history_system_prompt + text_data_prompt
-            chat_history_system_prompt
+            personality_system_prompt + "\n" + chat_history_system_prompt
     }
 
     user_content = await process_message(bot, message)
@@ -38,8 +37,11 @@ async def build_system_prompt(bot, message, message_cache, text_data):
     formated_content = "(NEW MESSAGE TO RESPOND TO)\n" + user_prompt["content"]
     user_prompt["content"] = formated_content
 
+    cached_user_message = copy.deepcopy(user_content)
+
     if text_data:
         user_prompt["content"] += text_data
+        cached_user_message["content"] += text_data
 
     full_prompt = [
         system_prompt,
@@ -47,7 +49,7 @@ async def build_system_prompt(bot, message, message_cache, text_data):
         user_prompt
     ]
 
-    return full_prompt, system_prompt, message_cache
+    return full_prompt, system_prompt, message_cache, cached_user_message
 
 
 # Main entry point
@@ -56,9 +58,15 @@ async def llm_generate_response(bot, message, attachments=None):
 
     text_data, image_data = await sort_attachments(attachments)
 
-    full_prompt, system_prompt, message_cache = await build_system_prompt(bot, message, message_cache, text_data)
+    #  todo -- re-add vision model for image attachments, right now we are just dropping it after getting the file path
+
+    full_prompt, system_prompt, message_cache, cached_user_message = await build_system_prompt(bot, message, message_cache, text_data)
 
     response = await llm_generate_chat_response(full_prompt, system_prompt, message_cache)
+
+    response["user"] = cached_user_message
+    response["file_txt"] = text_data
+
     return response
 
 

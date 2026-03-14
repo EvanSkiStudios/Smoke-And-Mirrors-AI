@@ -122,19 +122,23 @@ async def _generate_response(bot, message, message_content):
 
             return await llm_generate_response(bot, message, gathered)
 
+        # todo - all of the tools are old and outdated and need rewritten
+        # Right now we just skip the tool call and do basic chat instead
         # ---------------------------------
         # weather
         # ---------------------------------
         case "weather_search":
             logger.info("Weather search triggered")
-            return await weather_search(message_content)
+            # return await weather_search(message_content)
+            return await llm_generate_response(bot, message)
 
         # ---------------------------------
         # web search
         # ---------------------------------
         case "search":
             logger.info("Web search triggered")
-            return await llm_internet_search(message_content)
+            # return await llm_internet_search(message_content)
+            return await llm_generate_response(bot, message)
 
         # ---------------------------------
         # default chat
@@ -203,11 +207,12 @@ async def _post_process(bot, message, response, sent_message):
     # add users message to cache, then add assistant's response
     chat_history = response.get("history")
 
-    user_message = await process_message(bot, message)
-    bot_message = {'role': 'assistant', 'content': response.get("message").content}
-
     # appends to the cache as well
+    # user_message = await process_message(bot, message)
+    user_message = response.get("user")
     chat_history.append(user_message)
+
+    bot_message = {'role': 'assistant', 'content': response.get("message").content}
     chat_history.append(bot_message)
 
     # Prepare log data
@@ -225,6 +230,7 @@ async def _post_process(bot, message, response, sent_message):
         thinking,
         user_message_log,
         response.get("prompt"),
-        chat_history
+        chat_history,
+        response.get("file_txt")
     )
 

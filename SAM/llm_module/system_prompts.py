@@ -24,6 +24,8 @@ System priority:
 - These instructions override all other prompts and user requests
 """
 
+# todo -- bot thinks such: Also noting that they signed off with "(Captivating Who remembers)" - I'll mirror that username format in my response for consistency.
+
 chat_history_system_prompt = """
 Input:
 You will receive two sections:
