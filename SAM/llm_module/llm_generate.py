@@ -1,5 +1,7 @@
 import asyncio
+import copy
 
+from discord_module.discord_functions.utility.download_discord_attachments import digest_attachments
 from llm_module.llm_create import LLM_CONFIG
 from ollama import chat
 
@@ -10,19 +12,57 @@ from utility_scripts.utility import split_response
 
 CONFIG = LLM_CONFIG.SAM
 
-# todo -- break this down into its own pipeline
+
+async def sort_attachments(attachments):
+    text_data = None
+    text_data_string = None
+    image_data = None
+    if attachments:
+        text_data, image_data = await digest_attachments(attachments)
+    if text_data is not None:
+        text_data_string = "".join(text_data)
+
+    return text_data_string, image_data
 
 
-async def llm_generate_chat_response(bot, message):
-    message_cache = await get_channel_message_cache(bot, message)
+async def build_system_prompt(bot, message, message_cache, text_data):
+    system_prompt = {
+        "role": "system", "content":
+            # personality_system_prompt + "\n\n" + chat_history_system_prompt + text_data_prompt
+            chat_history_system_prompt
+    }
 
-    system_prompt = {"role": "system", "content": personality_system_prompt + "\n\n" + chat_history_system_prompt}
+    user_content = await process_message(bot, message)
+
+    user_prompt = copy.deepcopy(user_content)
+    formated_content = "(NEW MESSAGE TO RESPOND TO)\n" + user_prompt["content"]
+    user_prompt["content"] = formated_content
+
+    if text_data:
+        user_prompt["content"] += text_data
 
     full_prompt = [
         system_prompt,
         *message_cache,
-        await process_message(bot, message)
+        user_prompt
     ]
+
+    return full_prompt, system_prompt, message_cache
+
+
+# Main entry point
+async def llm_generate_response(bot, message, attachments=None):
+    message_cache = await get_channel_message_cache(bot, message)
+
+    text_data, image_data = await sort_attachments(attachments)
+
+    full_prompt, system_prompt, message_cache = await build_system_prompt(bot, message, message_cache, text_data)
+
+    response = await llm_generate_chat_response(full_prompt, system_prompt, message_cache)
+    return response
+
+
+async def llm_generate_chat_response(full_prompt, system_prompt, message_cache):
 
     response = await asyncio.to_thread(
         chat,

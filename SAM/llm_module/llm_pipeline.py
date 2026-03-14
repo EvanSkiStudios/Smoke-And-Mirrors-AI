@@ -2,7 +2,7 @@ import asyncio
 
 from discord_module.discord_functions.discord_bot_users_manager import bot_message_cooldown
 from discord_module.discord_functions.utility.download_discord_attachments import download_attachments
-from llm_module.llm_generate import llm_generate_chat_response
+from llm_module.llm_generate import llm_generate_chat_response, llm_generate_response
 from memory_module.process_message import process_message
 
 from message_logs.log_message import log_message
@@ -118,9 +118,9 @@ async def _generate_response(bot, message, message_content):
 
             if not gathered:
                 logger.error("Attachment download failed. Falling back to default chat.")
-                return await llm_generate_chat_response(bot, message)
+                return await llm_generate_response(bot, message)
 
-            # return await sam_message(message_attachments=gathered)
+            return await llm_generate_response(bot, message, gathered)
 
         # ---------------------------------
         # weather
@@ -140,7 +140,7 @@ async def _generate_response(bot, message, message_content):
         # default chat
         # ---------------------------------
         case _:
-            return await llm_generate_chat_response(bot, message)
+            return await llm_generate_response(bot, message)
 
 
 # ============================================================

@@ -27,12 +27,14 @@ async def gather_past_messages(bot, message, amount=20):
     channel = message.channel
 
     messages = []
-    async for past_message in channel.history(limit=amount):
+    async for past_message in channel.history(limit=amount, before=message):
 
         # filter past messages
         if await skip_message(past_message):
             continue
 
         messages.append(await process_message(bot, past_message))
+
+    messages.reverse()
 
     return messages

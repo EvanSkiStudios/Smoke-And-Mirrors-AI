@@ -41,8 +41,8 @@ async def process_message(bot, message):
     if reply_target_author:
         return {
             'role': 'user',
-            'content': f'{author.name} ({author.display_name}) (Replying to: {reply_target_author}): "{content}"'
+            'content': f'{author.name} ({author.display_name}) (Replying to: {reply_target_author}): {content}'
         }
 
     # Regular user message
-    return {'role': 'user', 'content': f'{author.name} ({author.display_name}): "{content}"'}
+    return {'role': 'user', 'content': f'{author.name} ({author.display_name}): {content}'}

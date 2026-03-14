@@ -81,7 +81,7 @@ async def digest_attachments(message_attachments):
         if media_type == "text":
             charset = params.get("charset", "utf-8")
 
-            text_string = f"\n```{filename}\n"
+            text_string = f"\n\n```--- File: {filename} ---\n"
 
             with file_path.open("r", encoding=charset, errors="replace") as f:
                 content = f.read()

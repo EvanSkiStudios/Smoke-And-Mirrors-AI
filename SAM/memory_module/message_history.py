@@ -39,9 +39,6 @@ async def get_channel_message_cache(bot, message, amount=20) -> list:
         past_messages = await gather_past_messages(bot, message, amount)
 
         channel_message_cache.extend(past_messages)
-        channel_message_cache.reverse()
-        if len(channel_message_cache) > 0:
-            channel_message_cache.pop()  # remove last message
 
     logger.info(f'Channel Cache Complete, Gathered {len(channel_message_cache)} Messages')
     return channel_message_cache
