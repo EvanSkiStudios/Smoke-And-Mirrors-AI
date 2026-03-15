@@ -14,7 +14,8 @@
  Use "$s help" for a list of commands
  
  ### About
- See the [Wiki](https://github.com/EvanSkiStudios/sam_ai_assistant/wiki) for more information  
+ [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EvanSkiStudios/Smoke-And-Mirrors-AI)
+ See the [GitHub Wiki](https://github.com/EvanSkiStudios/sam_ai_assistant/wiki) for more information  
  
  ### Images
  Provided by Unsplash  
