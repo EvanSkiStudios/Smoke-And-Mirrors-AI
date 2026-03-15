@@ -2,7 +2,7 @@ import asyncio
 
 from discord_module.discord_functions.discord_bot_users_manager import bot_message_cooldown
 from discord_module.discord_functions.utility.download_discord_attachments import download_attachments
-from llm_module.llm_generate import llm_generate_chat_response, llm_generate_response
+from llm_module.llm_generate import llm_generate_response
 from memory_module.process_message import process_message
 
 from message_logs.log_message import log_message
@@ -199,38 +199,49 @@ async def _send_response(bot, message, response, is_tts_message):
 
 async def _post_process(bot, message, response, sent_message):
     """
-    Handles:
-    - Assistant message caching
-    - Logging metadata
+    Final processing step after the assistant response is sent.
+
+    Responsibilities:
+    1. Update the in-memory chat history (user message + assistant reply).
+    2. Prepare metadata required for logging.
+    3. Write the interaction to the logging system.
     """
 
-    # add users message to cache, then add assistant's response
+    # Retrieve the existing chat history cache
     chat_history = response.get("history")
 
-    # appends to the cache as well
-    # user_message = await process_message(bot, message)
+    # ---- Update chat history ----
+    # Add the processed user message that generated this response
     user_message = response.get("user")
     chat_history.append(user_message)
 
-    bot_message = {'role': 'assistant', 'content': response.get("message").content}
+    # Add the assistant response to the chat history
+    bot_message = {
+        "role": "assistant",
+        "content": response.get("message").content
+    }
     chat_history.append(bot_message)
 
-    # Prepare log data
+    # ---- Prepare logging data ----
+    # Minimal representation of the original Discord user message
     user_message_log = {
         "id": message.id,
         "content": message.clean_content,
         "name": message.author.name
     }
 
+    # Extract optional internal reasoning if present
     msg = response.get("message")
     thinking = getattr(msg, "thinking", "No Thinking")
 
+    # append values to response
+    response["thinking"] = thinking
+
+    # ---- Persist interaction to log ----
     await log_message(
+        response,
         sent_message,
-        thinking,
         user_message_log,
-        response.get("prompt"),
         chat_history,
-        response.get("file_txt")
     )
 
