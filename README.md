@@ -14,8 +14,7 @@
  Use "$s help" for a list of commands
  
  ### About 
- [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EvanSkiStudios/Smoke-And-Mirrors-AI)    
- [GitHub Wiki](https://github.com/EvanSkiStudios/Smoke-And-Mirrors-AI/wiki)  
+ [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EvanSkiStudios/Smoke-And-Mirrors-AI)  [![GitHub Wiki](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/EvanSkiStudios/Smoke-And-Mirrors-AI/wiki)   
  The wiki is currently experimental, and automated with the use of [devin.ai](https://devin.ai/)   
  
  
