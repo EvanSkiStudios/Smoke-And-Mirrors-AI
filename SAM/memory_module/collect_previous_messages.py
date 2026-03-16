@@ -6,7 +6,7 @@ from memory_module.process_message import process_message
 
 # filters message based on rules
 async def skip_message(message):
-    if message.author in bots_blacklist:
+    if message.author.id in bots_blacklist:
         # todo -- remove messages from users that are replies to / mention, banned bots
         return True
 

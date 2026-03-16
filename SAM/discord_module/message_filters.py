@@ -43,7 +43,7 @@ async def should_ignore_message(client, message):
 
     if await message_is_slash_reply(message):
         return True
-    if message.author in bots_blacklist:
+    if message.author.id in bots_blacklist:
         return True
     if message.type == discord.MessageType.chat_input_command:
         # slash command messages
