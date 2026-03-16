@@ -15,7 +15,7 @@
  
  ### About 
  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EvanSkiStudios/Smoke-And-Mirrors-AI)    
- [GitHub Wiki](https://github.com/EvanSkiStudios/sam_ai_assistant/wiki)  
+ [GitHub Wiki](https://github.com/EvanSkiStudios/Smoke-And-Mirrors-AI/wiki)  
  The wiki is currently experimental, and automated with the use of [devin.ai](https://devin.ai/)   
  
  
