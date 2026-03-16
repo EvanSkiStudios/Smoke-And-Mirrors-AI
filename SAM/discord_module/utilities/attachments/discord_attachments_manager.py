@@ -1,11 +1,12 @@
 import os
 import requests
 
+from typing import NamedTuple
+
 from pathlib import Path
 from dotenv import load_dotenv
 
 from utility_scripts.system_logging import setup_logger
-from utility_scripts.utility import parse_mime_type
 
 # configure logging
 logger = setup_logger(__name__)
@@ -23,6 +24,56 @@ HEADERS = {
 parent_dir = Path(__file__).resolve().parent
 temp_path = parent_dir / 'attachments_temp'
 temp_path.mkdir(exist_ok=True)
+
+
+class MimeType(NamedTuple):
+    """Parsed MIME type.
+
+    media_type: top-level type (e.g. 'text', 'image')
+    media_subtype: subtype (e.g. 'plain', 'webp')
+    params: MIME parameters (e.g. {'charset': 'utf-8'})
+    """
+    media_type: str
+    media_subtype: str
+    params: dict[str, str]
+
+
+def parse_mime_type(mime: str) -> MimeType:
+    """
+    media_type:"text"
+    media_subtype: "plain"
+    params: {"charset": "utf-8"}
+    """
+
+    type_part, _, param_part = mime.partition(";")
+    media_type, media_subtype = type_part.split("/", 1)
+
+    params = {}
+    if param_part:
+        for item in param_part.split(";"):
+            key, _, value = item.strip().partition("=")
+            if key and value:
+                params[key] = value
+
+    return MimeType(media_type, media_subtype, params)
+
+
+def get_message_attachments(message):
+    message_attachments = None
+    if message.attachments:
+        logger.info("Message has attachments")
+        message_attachments = []
+        for media in message.attachments:
+            content_type = str(media.content_type).lower()
+
+            # Unhandled formats will give  (status code: 500) from the bot
+            # currently only looks at one image if there are multiple
+            message_attachments.append({
+                "type": content_type,
+                "filename": media.filename,
+                "attachment_url": media.url
+            })
+    return message_attachments
 
 
 def download_attachments(message_attachments: list) -> dict:

@@ -67,6 +67,7 @@ def is_weather_request(text: str, debug=False) -> bool:
     doc = nlp(text)
 
     # 1️⃣ Must have location
+    # noinspection SpellCheckingInspection
     has_loc, locs = _has_location(doc)
     if not has_loc:
         if debug:

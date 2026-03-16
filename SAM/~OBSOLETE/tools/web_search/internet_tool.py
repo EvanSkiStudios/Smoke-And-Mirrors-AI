@@ -5,7 +5,7 @@ from ollama import ChatResponse, chat
 
 from llm_module.system_prompts import personality_system_prompt
 from tools.web_search.google_websearch import google_search
-from utility_scripts.utility import split_response
+from utility_scripts.utility_functions import split_response
 from utility_scripts.system_logging import setup_logger
 
 # configure logging

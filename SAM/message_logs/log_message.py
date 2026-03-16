@@ -34,53 +34,54 @@ def format_details(summary: str, content: str) -> str:
 
 
 async def log_message(response: dict, sent_message, user_message: dict, full_history: dict) -> None:
+    # noinspection GrazieInspection
     """
-    Write a Markdown log file capturing a full message interaction.
+        Write a Markdown log file capturing a full message interaction.
 
-    The log includes:
-        - User metadata
-        - User message content
-        - Assistant response
-        - Optional file text data
-        - Token usage statistics
-        - Internal reasoning ("thinking") if present
-        - Complete chat history
-        - The system prompt used for the request
+        The log includes:
+            - User metadata
+            - User message content
+            - Assistant response
+            - Optional file text data
+            - Token usage statistics
+            - Internal reasoning ("thinking") if present
+            - Complete chat history
+            - The system prompt used for the request
 
-    A unique filename is generated using a timestamp and the
-    message ID of the sent response.
+        A unique filename is generated using a timestamp and the
+        message ID of the sent response.
 
-    Args:
-        response (dict):
-            Response payload returned from the model handler.
-            May include keys such as:
-                "prompt"       -> system prompt dictionary
-                "message"      -> model message object
-                "file_txt"     -> extracted file text
-                "token_usage"  -> token statistics
+        Args:
+            response (dict):
+                Response payload returned from the model handler.
+                May include keys such as:
+                    "prompt"       -> system prompt dictionary
+                    "message"      -> model message object
+                    "file_txt"     -> extracted file text
+                    "token_usage"  -> token statistics
 
-        sent_message:
-            The final message object sent by the system (must contain
-            `id` and `content` attributes).
+            sent_message:
+                The final message object sent by the system (must contain
+                `id` and `content` attributes).
 
-        user_message (dict):
-            Dictionary describing the user message.
-            Expected fields:
-                "id"
-                "name"
-                "content"
+            user_message (dict):
+                Dictionary describing the user message.
+                Expected fields:
+                    "id"
+                    "name"
+                    "content"
 
-        full_history (dict):
-            Iterable containing the full conversation history where each
-            item has:
-                {
-                    "role": str,
-                    "content": str
-                }
+            full_history (dict):
+                Iterable containing the full conversation history where each
+                item has:
+                    {
+                        "role": str,
+                        "content": str
+                    }
 
-    Returns:
-        None
-    """
+        Returns:
+            None
+        """
 
     # Ensure the log directory exists relative to this module.
     save_dir = Path(__file__).resolve().parent / "logs"

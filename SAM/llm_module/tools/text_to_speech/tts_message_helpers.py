@@ -2,7 +2,7 @@ import os
 import re
 import discord
 
-from tools.text_to_speech.elevenlabs_voice import text_to_speech
+from llm_module.tools.text_to_speech.elevenlabs_voice import text_to_speech
 from utility_scripts.system_logging import setup_logger
 
 # configure logging

@@ -1,9 +1,11 @@
 import pytest
-from tools.web_search.search_determinator.internet_search_determinator import is_search_request
+
 
 import re
 import json
 from pathlib import Path
+
+from llm_module.tools.web_search.search_determinator.internet_search_determinator import is_search_request
 
 # Adjust path: go one folder up from the test file
 _patterns_file = Path(__file__).parent.parent / "search_patterns.json"

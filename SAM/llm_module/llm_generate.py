@@ -1,14 +1,14 @@
 import asyncio
 import copy
 
-from discord_module.discord_functions.utility.download_discord_attachments import digest_attachments
+from discord_module.utilities.attachments.discord_attachments_manager import digest_attachments
+from discord_module.utilities.split_message import split_response
 from llm_module.llm_create import LLM_CONFIG
 from ollama import chat
 
 from llm_module.system_prompts import personality_system_prompt, chat_history_system_prompt
 from memory_module.message_history import get_channel_message_cache
 from memory_module.process_message import process_message
-from utility_scripts.utility import split_response
 
 CONFIG = LLM_CONFIG.SAM
 

@@ -1,7 +1,6 @@
 import pytest
-from tools.weather_search.weather_determinator.weather_search_determinator import (
-    is_weather_request
-)
+
+from llm_module.tools.weather.weather_determinator.weather_search_determinator import is_weather_request
 
 
 @pytest.mark.parametrize("text,expected", [

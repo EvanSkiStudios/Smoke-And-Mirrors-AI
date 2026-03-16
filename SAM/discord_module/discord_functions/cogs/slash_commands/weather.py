@@ -2,7 +2,6 @@ from typing import Optional
 from discord import app_commands
 from discord.ext import commands
 
-from tools.weather_search.weather_api import slash_get_weather
 from utility_scripts.system_logging import setup_logger
 
 # configure logging
@@ -18,7 +17,9 @@ class Weather(commands.Cog):
         logger.debug(f'Command issued: weather by {interaction.user}, {city}, {state}')
         await interaction.response.defer()
 
-        result = slash_get_weather(city, state)
+        # result = slash_get_weather(city, state)
+        # todo -- Temp set to None while under refactor
+        result = None
         if not result:
             logger.error('Weather Error')
             await interaction.followup.send(f'Error getting weather for {city}, {state}')

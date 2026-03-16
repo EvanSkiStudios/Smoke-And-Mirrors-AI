@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from tools.text_to_speech.elevenlabs_voice import text_to_speech
+from llm_module.tools.text_to_speech.elevenlabs_voice import text_to_speech
 from utility_scripts.system_logging import setup_logger
 
 # configure logging
@@ -27,6 +27,7 @@ class TTS(commands.Cog):
 
             # 🎲 Easter Egg: 1 in 100 chance to drop gag
             if random.randint(1, 100) == 45:
+                # send YouTube video of spongebob clip of patrick "that was my last quarter"
                 await interaction.followup.send('https://youtu.be/c4MAh9nCddc?t=5')
             else:
                 await interaction.followup.send('Error making TTS. Probably out of cash.')
