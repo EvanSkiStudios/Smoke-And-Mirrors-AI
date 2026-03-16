@@ -11,6 +11,9 @@ from utility_scripts.system_logging import setup_logger
 # configure logging
 logger = setup_logger(__name__)
 
+# todo -- have it accept an message id and then use the text from the message to generate a tts from
+# todo -- split message down by sentence by sentence, generate by sentence then stitch them back together
+
 
 class TTS(commands.Cog):
     def __init__(self, client):

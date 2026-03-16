@@ -4,6 +4,7 @@ import requests
 from typing import NamedTuple
 
 from pathlib import Path
+from PIL import Image
 from dotenv import load_dotenv
 
 from utility_scripts.system_logging import setup_logger
@@ -76,6 +77,11 @@ def get_message_attachments(message):
     return message_attachments
 
 
+# set max image size
+MAX_WIDTH = 1024
+MAX_HEIGHT = 1024
+
+
 def download_attachments(message_attachments: list) -> dict:
     if not message_attachments:
         return {}
@@ -98,6 +104,20 @@ def download_attachments(message_attachments: list) -> dict:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
                             file.write(chunk)
+
+                # Todo -- Handle DecompressionBombWarning
+                # resize stage for images
+                if media_type == "image":
+                    try:
+                        with Image.open(file_path) as img:
+                            width, height = img.size
+
+                            if width > MAX_WIDTH or height > MAX_HEIGHT:
+                                logger.info(f"Resizing {file_name}: {width}x{height}")
+                                img.thumbnail((MAX_WIDTH, MAX_HEIGHT))
+                                img.save(file_path)
+                    except Exception as e:
+                        logger.error(f"{file_name} || Image resize failed: {e}")
 
                 attachment_data = {
                     "filepath": file_path,
@@ -140,7 +160,12 @@ async def digest_attachments(message_attachments):
             text_string += (content + "\n```")
             text_data.append(text_string)
 
-        # clean up
-        os.remove(file_path)
+            # clean up text file
+            os.remove(file_path)
 
     return text_data, image_data
+
+
+def cleanup_image_file(image_list):
+    for image in image_list:
+        os.remove(image)

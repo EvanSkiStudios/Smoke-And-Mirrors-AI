@@ -27,7 +27,7 @@ llm_config = {
     "SAM": {
         "MODEL_NAME": "SAM",
         "OLLAMA_MODEL": "huihui_ai/deepseek-r1-abliterated",
-        "VISION_MODEL": "qwen3-vl",
+        "VISION_MODEL": "qwen3-vl:4b",
         "DEFAULT_CONTEXT": 16384,
         "DEFAULT_TEMPERATURE": 0.5
     }

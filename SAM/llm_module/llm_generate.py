@@ -1,7 +1,7 @@
 import asyncio
 import copy
 
-from discord_module.utilities.attachments.discord_attachments_manager import digest_attachments
+from discord_module.utilities.attachments.discord_attachments_manager import digest_attachments, cleanup_image_file
 from discord_module.utilities.split_message import split_response
 from llm_module.llm_create import LLM_CONFIG
 from ollama import chat
@@ -9,6 +9,11 @@ from ollama import chat
 from llm_module.system_prompts import personality_system_prompt, chat_history_system_prompt
 from memory_module.message_history import get_channel_message_cache
 from memory_module.process_message import process_message
+
+from utility_scripts.system_logging import setup_logger
+
+# configure logging
+logger = setup_logger(__name__)
 
 CONFIG = LLM_CONFIG.SAM
 
@@ -25,7 +30,8 @@ async def sort_attachments(attachments):
     return text_data_string, image_data
 
 
-async def build_system_prompt(bot, message, message_cache, text_data):
+async def build_system_prompt(bot, message, message_cache, file_data):
+
     system_prompt = {
         "role": "system", "content":
             personality_system_prompt + "\n" + chat_history_system_prompt
@@ -34,14 +40,21 @@ async def build_system_prompt(bot, message, message_cache, text_data):
     user_content = await process_message(bot, message)
 
     user_prompt = copy.deepcopy(user_content)
-    formated_content = "(NEW MESSAGE TO RESPOND TO)\n" + user_prompt["content"]
+    formated_content = "(NEW MESSAGE TO RESPOND TO): " + user_prompt["content"]
     user_prompt["content"] = formated_content
 
     cached_user_message = copy.deepcopy(user_content)
 
+    # File data
+    text_data = file_data["text"]
     if text_data:
         user_prompt["content"] += text_data
         cached_user_message["content"] += text_data
+
+    # Images
+    image_data = file_data["image"]
+    if image_data:
+        user_prompt["images"] = image_data
 
     full_prompt = [
         system_prompt,
@@ -57,10 +70,12 @@ async def llm_generate_response(bot, message, attachments=None):
     message_cache = await get_channel_message_cache(bot, message)
 
     text_data, image_data = await sort_attachments(attachments)
+    file_data = {
+        "text": text_data,
+        "image": image_data
+    }
 
-    #  todo -- re-add vision model for image attachments, right now we are just dropping it after getting the file path
-
-    full_prompt, system_prompt, message_cache, cached_user_message = await build_system_prompt(bot, message, message_cache, text_data)
+    full_prompt, system_prompt, message_cache, cached_user_message = await build_system_prompt(bot, message, message_cache, file_data)
 
     response = await llm_generate_chat_response(full_prompt, system_prompt, message_cache)
 
@@ -71,10 +86,15 @@ async def llm_generate_response(bot, message, attachments=None):
 
 
 async def llm_generate_chat_response(full_prompt, system_prompt, message_cache):
+    llm_model = CONFIG.MODEL_NAME
+
+    user_prompt = full_prompt[-1]
+    if isinstance(user_prompt, dict) and "images" in user_prompt:
+        llm_model = CONFIG.VISION_MODEL
 
     response = await asyncio.to_thread(
         chat,
-        model=CONFIG.MODEL_NAME,
+        model=llm_model,
         messages=full_prompt,
         options={
             "num_ctx": CONFIG.DEFAULT_CONTEXT,
@@ -85,6 +105,10 @@ async def llm_generate_chat_response(full_prompt, system_prompt, message_cache):
     )
 
     cleaned = response.message.content.replace("'", "\\'")
+
+    # clean up images
+    if llm_model == CONFIG.VISION_MODEL:
+        cleanup_image_file(user_prompt["images"])
 
     # Extract token usage from response
     token_usage = {
