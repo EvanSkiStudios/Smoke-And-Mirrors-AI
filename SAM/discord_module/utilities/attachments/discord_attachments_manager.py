@@ -30,7 +30,7 @@ temp_path.mkdir(exist_ok=True)
 def get_message_attachments(message):
     message_attachments = None
     if message.attachments:
-        
+
         # ignore attachments from certain bots./users
         if message.author.bot:
             ignore = ignore_bot_attachment(message.author.id)

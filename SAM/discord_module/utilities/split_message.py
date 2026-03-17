@@ -1,17 +1,43 @@
-# discord has a message limit of 2000 characters, so we split responses if they are too large
-def split_response(response, max_len=2000):
-    if len(response) < max_len:
-        return [response]
+DISCORD_CHAR_LIMIT = 2000
+
+
+def split_response(text, limit=DISCORD_CHAR_LIMIT):
+    if len(text) <= limit:
+        return [text]
 
     chunks = []
-    while len(response) > max_len:
-        # Find the last space or line break within the first max_len characters
-        split_index = max(response.rfind(' ', 0, max_len), response.rfind('\n', 0, max_len))
-        if split_index == -1:
-            # If no space or newline is found, just split at max_len
-            split_index = max_len
-        chunks.append(response[:split_index].rstrip())
-        response = response[split_index:].lstrip()
-    if response:
-        chunks.append(response)
+    current_chunk = ""
+    in_code_block = False
+    code_lang = ""
+    lines = text.splitlines(keepends=True)
+
+    for line in lines:
+        line_length = len(line)
+        # Check if adding the line would exceed the limit
+        if len(current_chunk) + line_length > limit:
+            if in_code_block:
+                # Close the code block at the end of the chunk
+                current_chunk += "```\n"
+            chunks.append(current_chunk)
+            current_chunk = ""
+            if in_code_block:
+                # Reopen the code block for the next chunk, preserving language
+                current_chunk += f"```{code_lang}\n"
+
+        current_chunk += line
+
+        # Detect code block toggles
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            if not in_code_block:
+                # Entering a code block, capture the language
+                code_lang = stripped[3:].strip()
+            in_code_block = not in_code_block
+
+    if current_chunk:
+        if in_code_block:
+            current_chunk += "```\n"
+        chunks.append(current_chunk)
+
     return chunks
+
