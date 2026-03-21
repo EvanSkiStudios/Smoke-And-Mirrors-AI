@@ -114,6 +114,8 @@ def download_attachments(message_attachments: list) -> dict:
 
 
 async def digest_attachments(message_attachments):
+    print(message_attachments)
+
     text_data = []
     image_data = []
 
@@ -123,9 +125,12 @@ async def digest_attachments(message_attachments):
         media_subtype = attachment["mediasubtype"]
         params = attachment["params"]
 
+        # allowed images
         if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
             image_data.append(file_path)
+            continue
 
+        # allowed text
         if media_type == "text":
             charset = params.get("charset", "utf-8")
 
@@ -139,6 +144,12 @@ async def digest_attachments(message_attachments):
 
             # clean up text file
             os.remove(file_path)
+            continue
+
+        # fallback: anything else gets deleted
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            continue
 
     return text_data, image_data
 

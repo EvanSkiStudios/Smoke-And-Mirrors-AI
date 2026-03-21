@@ -7,7 +7,7 @@ from utility_scripts.system_logging import setup_logger
 logger = setup_logger(__name__)
 
 channels_dict = {}
-MAX_CACHE_SIZE = 40
+MAX_CACHE_SIZE = 20
 
 
 # for neuralize command

@@ -1,14 +1,9 @@
 import os
-from types import SimpleNamespace
 from dotenv import load_dotenv
 
+from utility_scripts.namespace_utility import namespace
+
 load_dotenv()
-
-
-def ns(d: dict) -> SimpleNamespace:
-    return SimpleNamespace(**{
-        k: ns(v) if isinstance(v, dict) else v for k, v in d.items()
-    })
 
 
 config_dict = {
@@ -25,7 +20,7 @@ config_dict = {
     "MASTER_USER_ID": os.getenv("MASTER_USER_ID"),
 }
 
-CONFIG = ns(config_dict)
+CONFIG = namespace(config_dict)
 
 
 def get_config():

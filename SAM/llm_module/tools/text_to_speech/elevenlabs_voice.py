@@ -14,7 +14,18 @@ logger = setup_logger(__name__)
 # Load Env
 load_dotenv()
 API_KEY = os.getenv("ELEVENLABS_API_KEY")
-VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID")
+
+voices_dict = {
+    "VOICES": {
+        "DEFAULT": os.getenv("ELEVENLABS_VOICE_ID"),
+        "ISABEL": os.getenv("VOICE_ID_ISABEL"),
+        "SAM": os.getenv("VOICE_ID_SAM"),
+        "GILBERT": os.getenv("VOICE_ID_GILBERT"),
+        "COLT": os.getenv("VOICE_ID_COLT"),
+        "HERMA": os.getenv("VOICE_ID_HERMA"),
+    }
+}
+VOICES = voices_dict["VOICES"]
 
 client = ElevenLabs(
     api_key=f"{API_KEY}"
@@ -34,14 +45,19 @@ def clean_text(text: str) -> str:
     return cleaned[:14]
 
 
-async def text_to_speech(text: str, file_name='text_to_speech'):
+async def text_to_speech(text: str, file_name='text_to_speech', voice="default"):
     logger.info("Starting TTS Message")
+
+    if voice is not None:
+        voice_id = VOICES.get(voice.upper(), VOICES["DEFAULT"])
+    else:
+        voice_id = VOICES["DEFAULT"]
 
     def _blocking_tts():
         try:
             audio = client.text_to_speech.convert(
                 text=text,
-                voice_id=VOICE_ID,
+                voice_id=voice_id,
                 model_id="eleven_v3",
                 output_format="mp3_44100_128",
                 voice_settings=VoiceSettings(

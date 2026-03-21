@@ -1,10 +1,10 @@
 import os
 import sys
-from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from ollama import Client
 
+from utility_scripts.namespace_utility import namespace
 from utility_scripts.system_logging import setup_logger
 
 from llm_module.system_prompts import personality_system_prompt
@@ -14,12 +14,6 @@ logger = setup_logger(__name__)
 
 load_dotenv()
 os.environ["OLLAMA_API_KEY"] = os.getenv("OLLAMA_API")
-
-
-def ns(d: dict) -> SimpleNamespace:
-    return SimpleNamespace(**{
-        k: ns(v) if isinstance(v, dict) else v for k, v in d.items()
-    })
 
 
 # model settings for easy swapping
@@ -32,7 +26,7 @@ llm_config = {
         "DEFAULT_TEMPERATURE": 0.5
     }
 }
-LLM_CONFIG = ns(llm_config)
+LLM_CONFIG = namespace(llm_config)
 
 
 def get_llm_config():
