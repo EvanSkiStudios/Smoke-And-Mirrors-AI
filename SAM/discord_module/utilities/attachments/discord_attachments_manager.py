@@ -114,10 +114,9 @@ def download_attachments(message_attachments: list) -> dict:
 
 
 async def digest_attachments(message_attachments):
-    print(message_attachments)
-
     text_data = []
     image_data = []
+    audio_text = []
 
     for filename, attachment in message_attachments.items():
         file_path = attachment["filepath"]
@@ -126,7 +125,7 @@ async def digest_attachments(message_attachments):
         params = attachment["params"]
 
         # allowed images
-        if media_type == "image" and media_subtype in ("png", "jpeg", "webp"):
+        if media_type == "image" and media_subtype in ("png", "jpg", "jpeg", "webp"):
             image_data.append(file_path)
             continue
 
@@ -146,12 +145,21 @@ async def digest_attachments(message_attachments):
             os.remove(file_path)
             continue
 
+        # allowed audio
+        # if media_type == "audio":
+         #   transcribed_text = await whisper_transcribe(file_path)
+         #   audio_text.append(transcribed_text)
+
         # fallback: anything else gets deleted
         if os.path.exists(file_path):
             os.remove(file_path)
             continue
 
-    return text_data, image_data
+    return {
+        "text": text_data,
+        "image": image_data,
+        "audio": audio_text
+    }
 
 
 def cleanup_image_file(image_list):

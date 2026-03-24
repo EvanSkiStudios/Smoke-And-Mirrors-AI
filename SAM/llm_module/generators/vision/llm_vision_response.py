@@ -11,7 +11,7 @@ from utility_scripts.system_logging import setup_logger
 # configure logging
 logger = setup_logger(__name__)
 
-CONFIG = LLM_CONFIG.ISABEL
+CONFIG = LLM_CONFIG.SAM
 
 
 async def llm_generate_vision_response(bot, message, attachments=None):

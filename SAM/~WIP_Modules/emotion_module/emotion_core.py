@@ -1,5 +1,5 @@
-from emotion_module.EmotionVector import EmotionVector
-from emotion_module.Emotions import BASE_EMOTIONS
+from WIP_Modules.emotion_module.EmotionVector import EmotionVector
+from WIP_Modules.emotion_module.Emotions import BASE_EMOTIONS
 
 if __name__ == "__main__":
     EMOTION_VECTOR = EmotionVector(BASE_EMOTIONS)
