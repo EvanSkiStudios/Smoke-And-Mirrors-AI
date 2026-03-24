@@ -25,8 +25,8 @@ class TTS(commands.Cog):
         voice="Choose a voice"
     )
     @app_commands.choices(voice=[
-        app_commands.Choice(name="ISABEL", value="ISABEL"),
         app_commands.Choice(name="SAM", value="SAM"),
+        app_commands.Choice(name="ISABEL", value="ISABEL"),
         app_commands.Choice(name="Gilbert", value="GILBERT"),
         app_commands.Choice(name="Colt 45", value="COLT"),
         app_commands.Choice(name="Hermaeus Mora", value="HERMA"),

@@ -4,7 +4,7 @@ import re
 
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
-from elevenlabs import play, VoiceSettings
+from elevenlabs import VoiceSettings
 from elevenlabs.core.api_error import ApiError
 from utility_scripts.system_logging import setup_logger
 
@@ -18,8 +18,8 @@ API_KEY = os.getenv("ELEVENLABS_API_KEY")
 voices_dict = {
     "VOICES": {
         "DEFAULT": os.getenv("ELEVENLABS_VOICE_ID"),
-        "ISABEL": os.getenv("VOICE_ID_ISABEL"),
         "SAM": os.getenv("VOICE_ID_SAM"),
+        "ISABEL": os.getenv("VOICE_ID_ISABEL"),
         "GILBERT": os.getenv("VOICE_ID_GILBERT"),
         "COLT": os.getenv("VOICE_ID_COLT"),
         "HERMA": os.getenv("VOICE_ID_HERMA"),
@@ -61,10 +61,10 @@ async def text_to_speech(text: str, file_name='text_to_speech', voice="default")
                 model_id="eleven_v3",
                 output_format="mp3_44100_128",
                 voice_settings=VoiceSettings(
-                    stability=0.0,
-                    similarity_boost=1.0,
-                    style=0.0,
-                    use_speaker_boost=True,
+                    stability=0.5,
+                    use_speaker_boost=False,
+                    similarity_boost=0.5,
+                    style=0.5,
                     speed=1.0,
                 ),
             )
@@ -94,10 +94,3 @@ async def text_to_speech(text: str, file_name='text_to_speech', voice="default")
     # Run the blocking code in a separate thread
     file_path = await asyncio.to_thread(_blocking_tts)
     return file_path
-
-
-# Optional: play it too
-# if file_path:
-#     with open(file_path, "rb") as f:
-#         play(f.read())
-

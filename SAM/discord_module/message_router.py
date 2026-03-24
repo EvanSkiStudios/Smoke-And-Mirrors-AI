@@ -1,8 +1,9 @@
 import re
 import discord
 
-from llm_module.llm_pipeline import llm_chat
+
 from discord_module.message_filters import should_ignore_message
+from llm_module.llm_pipeline import llm_chat
 
 COMMAND_PREFIXES = ["$s "]
 
